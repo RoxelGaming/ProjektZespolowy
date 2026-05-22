@@ -1,0 +1,41 @@
+# ==========================================
+# Ogólny plik .gitignore dla strony internetowej
+# ==========================================
+
+# --- Systemowe / Środowiskowe (System / Environment) ---
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.local
+.env.*.local
+
+# --- IDEs i Edytory (IDEs and Editors) ---
+.vscode/
+.idea/
+*.suo
+*.swp
+
+# --- Node / Pakiety (Node / Packages) ---
+node_modules/
+/dist/
+/build/
+/.next/
+/.nuxt/
+/out/
+.npm
+.yarn/
+
+# --- Logi i pliki tymczasowe (Logs and temporary files) ---
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Przesłane pliki / Dane (Uploaded files / Data) ---
+# Odkomentuj poniższe, jeśli Twoja strona ma dynamiczny upload plików przez użytkowników
+# /public/uploads/
+# /wp-content/uploads/
+
+# --- Cache (Cache) ---
+.cache/
+.sass-cache/
