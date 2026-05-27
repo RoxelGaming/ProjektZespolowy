@@ -1,11 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  /* 1. Definiujemy nasze animacje jako zmienne motywu */
   --animate-wave-slow: wave-spin 12s infinite linear;
-  --animate-wave-fast: wave-spin 8s infinite linear;
+  --animate-wave-fast: wave-spin 10s infinite linear;
 
-  /* 2. Dodajemy klatki kluczowe bezpośrednio do wewnątrz bloku @theme */
   @keyframes wave-spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }

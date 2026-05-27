@@ -15,7 +15,7 @@ export default function Home() {
       {/* Przyciemnienie tła (Overlay) */}
       {/* - absolute inset-0: zajmuje cały obszar rodzica */}
       {/* - bg-black/50: czarne tło z 50% przezroczystością */}
-      <div className="absolute inset-0 bg-black/50" />
+      <div className="absolute inset-0 bg-black/30" />
 
       {/* 2. Warstwa Nawigacji */}
       {/* - relative z-10: upewniamy się, że jest nad przyciemnieniem */}
