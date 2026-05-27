@@ -1,6 +1,16 @@
+"use client"
+
+import { useToast } from '../contexts/ToastContext';
+
 export default function DashboardPage() {
+
+  const { addToast } = useToast();
+
   return (
     <div className="space-y-6">
+
+      <button onClick={() => addToast('jakiś fajny bardzo długi tekst nic nie związany z tym co robię ale jest długi! i teraz może byc jeszcze dłużsy to wszystko zależy od moje pragnienia dlatego nie przejmuję sie tym, i zrobię to jeszcze dłuższym tekstem by zobaczyć czy wyjdzie poza ekran :p', 'error')}>test</button>
+
       {/* Górna sekcja z powitaniem */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Przegląd panelu</h1>
