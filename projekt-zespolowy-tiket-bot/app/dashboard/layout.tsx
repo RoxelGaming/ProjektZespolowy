@@ -9,7 +9,7 @@ export default function DashboardLayout({
   return (
     // flex h-screen: zajmuje całą wysokość viewportu (obszaru roboczego przeglądarki)
     // overflow-hidden: zapobiega pojawieniu się paska przewijania na całej stronie
-    <div className="flex h-screen w-full bg-gray-950 text-white overflow-hidden">
+    <div className="flex h-screen w-full bg-gray-950 text-white overflow-hidden animate-show-in">
       
       {/* 1. Lewa kolumna: Sidebar */}
       <Sidebar />

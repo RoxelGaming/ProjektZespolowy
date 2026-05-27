@@ -12,7 +12,7 @@ export default function AnimatedWaves() {
                       left-[-50%] 
                       w-[200%] 
                       h-[50vh] 
-                      md:h-[60vh]
+                      
                       ">
         
         {/* Pierwsza fala - ciemniejsza, wolniejsza, pod spodem */}
@@ -25,7 +25,7 @@ export default function AnimatedWaves() {
                      max-w-[2000px] 
                      max-h-[2000px] 
                      ml-[-75vw] 
-                     max-md:ml-[-950px] 
+                     max-md:ml-[-300px] 
                      rounded-[43%] 
                      bg-indigo-900
                      animate-wave-slow
@@ -42,7 +42,6 @@ export default function AnimatedWaves() {
                      max-w-[1900px] 
                      max-h-[1900px] 
                      ml-[-70vw] 
-                     max-md:ml-[-1000px] 
                      rounded-[40%] 
                      bg-indigo-600
                      animate-wave-fast"
