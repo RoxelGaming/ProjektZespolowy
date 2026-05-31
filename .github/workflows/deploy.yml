@@ -40,8 +40,8 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
           server-dir: /
-          # Zmienione: Wskazujemy konkretny folder z aplikacją do wysłania
           local-dir: ./projekt-zespolowy-tiket-bot/
           exclude: |
             **/.git*
