@@ -22,7 +22,6 @@ jobs:
           node-version: '24.x'
 
       - name: 📦 Instalacja zależności
-        # Zmienione: Najpierw wchodzimy do folderu aplikacji
         run: cd projekt-zespolowy-tiket-bot && npm install
 
       - name: 🔨 Budowanie projektu
@@ -34,18 +33,22 @@ jobs:
           mkdir -p tmp
           touch tmp/restart.txt
 
-      - name: 🚀 Wdrażanie na serwer FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - name: 🧹 Usunięcie plików ignorowanych (zastępuje dawne exclude)
+        run: |
+          cd projekt-zespolowy-tiket-bot
+          rm -rf .next/cache
+          rm -rf node_modules
+          rm -rf .git
+          rm -f .env.example
+          rm -f README.md
+
+      - name: 🚀 Wdrażanie na serwer Krystal (SFTP)
+        uses: appleboy/scp-action@master
         with:
-          server: ${{ secrets.FTP_SERVER }}
+          host: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          server-dir: /
-          local-dir: ./projekt-zespolowy-tiket-bot/
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
-            .env.example
-            README.md
+          port: 722
+          source: "projekt-zespolowy-tiket-bot"
+          target: "/home/xdekhckr/projektzespolowy_app"
+          strip_components: 1
