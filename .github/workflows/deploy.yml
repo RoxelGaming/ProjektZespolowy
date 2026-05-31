@@ -27,18 +27,6 @@ jobs:
       - name: 🔨 Budowanie projektu
         run: cd projekt-zespolowy-tiket-bot && npm run build
 
-      - name: 🔄 Przygotowanie triggera restartu dla cPanelu
-        run: |
-          cd projekt-zespolowy-tiket-bot
-          mkdir -p tmp
-          touch tmp/restart.txt
-
-      - name: 🔄 Przygotowanie triggera restartu dla cPanelu
-        run: |
-          cd projekt-zespolowy-tiket-bot
-          mkdir -p tmp
-          touch tmp/restart.txt
-
       - name: 🧹 Usunięcie ciężkich plików (Naprawia błąd Timeout/EOF)
         run: |
           cd projekt-zespolowy-tiket-bot
@@ -62,8 +50,28 @@ jobs:
           protocol: ftps
           port: 21
           local-dir: ./projekt-zespolowy-tiket-bot/
-          # Używamy "./", zakładając, że używasz tego dedykowanego, ograniczonego konta FTP
-          server-dir: ./
-          # Wydłużamy limit czasu oczekiwania na odpowiedź serwera do 10 minut (600000 ms)
+          # BARDZO WAŻNE: Wskazujemy konkretny folder bota, by nie nabałaganić w root cPanelu!
+          server-dir: ./projektzespolowy_app/
           timeout: 600000
-      
+
+      - name: 🤖 Automatyczny NPM Install i Restart na serwerze cPanel
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 722 # Niestandardowy port SSH hostingu Krystal
+          # Skrypt wykonuje się bezpiecznie po przesłaniu plików:
+          script: |
+            # 1. Wejście do wirtualnego środowiska Node.js
+            source /home/xdekhckr/nodevenv/projektzespolowy_app/24/bin/activate
+            
+            # 2. Wejście do folderu Twojej aplikacji
+            cd /home/xdekhckr/projektzespolowy_app
+            
+            # 3. Automatyczna instalacja nowych modułów (jeśli są)
+            npm install
+            
+            # 4. Wyzwolenie twardego restartu aplikacji po zakończeniu instalacji
+            mkdir -p tmp
+            touch tmp/restart.txt
