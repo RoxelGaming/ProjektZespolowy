@@ -33,7 +33,7 @@ jobs:
           mkdir -p tmp
           touch tmp/restart.txt
 
-      - name: 🧹 Usunięcie plików ignorowanych (zastępuje dawne exclude)
+      - name: 🧹 Usunięcie ciężkich plików (Naprawia błąd Timeout/EOF)
         run: |
           cd projekt-zespolowy-tiket-bot
           rm -rf .next/cache
@@ -42,13 +42,16 @@ jobs:
           rm -f .env.example
           rm -f README.md
 
-      - name: 🚀 Wdrażanie na serwer Krystal (SFTP)
-        uses: appleboy/scp-action@master
+      - name: 🚀 Wdrażanie na serwer Krystal (FTPS)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          host: ${{ secrets.FTP_SERVER }}
+          server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          port: 722
-          source: "projekt-zespolowy-tiket-bot"
-          target: "/home/xdekhckr/projektzespolowy_app"
-          strip_components: 1
+          protocol: ftps
+          port: 21
+          # Wskazujemy lokalny folder z aplikacją (zwróć uwagę na ukośnik na końcu)
+          local-dir: ./projekt-zespolowy-tiket-bot/
+          # Jeśli Twoje konto FTP w cPanelu jest ograniczone TYLKO do folderu aplikacji, użyj "./"
+          # Jeśli konto ma dostęp do całego serwera, zmień to na np. "projektzespolowy_app/"
+          server-dir: ./
