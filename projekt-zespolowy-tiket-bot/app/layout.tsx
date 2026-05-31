@@ -42,13 +42,13 @@ export default async function RootLayout({
          <NextIntlClientProvider messages={messages}>
              <AccessibilityProvider>
                <Navbar>
-                 <LanguageSwitcher />
+               <LanguageSwitcher />
                  <ThemeToggle />
                </Navbar>
            
                {children}
-             <AccessibilityProvider>
-           <AccessibilityPanel />
+             <AccessibilityPanel />
+           </AccessibilityProvider>
          </NextIntlClientProvider>
        </body>
      </html>
