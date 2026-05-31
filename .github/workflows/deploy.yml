@@ -11,6 +11,12 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    
+    # KLUCZOWA ZMIANA:
+    # Ustawiamy domyślny folder roboczy dla wszystkich komend 'run'
+    defaults:
+      run:
+        working-directory: ./projekt-zespolowy-tiket-bot
 
     steps:
       - name: 🚚 Pobranie kodu
@@ -24,24 +30,25 @@ jobs:
       - name: 💾 Cache node_modules
         uses: actions/cache@v4
         with:
+          # Akcje 'uses' zawsze działają z głównego katalogu repozytorium, więc ścieżka zostaje
           path: projekt-zespolowy-tiket-bot/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('projekt-zespolowy-tiket-bot/package-lock.json') }}
 
       - name: 📦 Instalacja zależności
-        run: cd projekt-zespolowy-tiket-bot && npm ci
+        # Nie potrzebujemy już 'cd', bo 'defaults' robi to za nas
+        run: npm ci
 
       - name: 🔨 Budowanie projektu
-        run: cd projekt-zespolowy-tiket-bot && npm run build
+        run: npm run build
 
       - name: 🧹 Usunięcie ciężkich plików (Optymalizacja transferu)
         run: |
-          cd projekt-zespolowy-tiket-bot
-          # Usuwamy śmieci z kompilacji, ale zostawiamy node_modules dla cache'u
+          # Jesteśmy już w odpowiednim folderze, usuwamy śmieci z kompilacji
           rm -rf .next/cache
           rm -rf .next/turbopack
           rm -f .next/trace
           rm -f .next/trace-build
-          rm -rf .git
+          rm -rf ../.git
           rm -f .env.example
           rm -f README.md
 
@@ -54,21 +61,19 @@ jobs:
           protocol: ftps
           port: 21
           concurrency: 5
+          # Ta akcja też wymaga pełnej ścieżki
           local-dir: ./projekt-zespolowy-tiket-bot/
           server-dir: ./projektzespolowy_app/
           timeout: 600000
 
-          
       - name: 🤖 Automatyczny NPM Install i Restart na serwerze cPanel
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          port: 722 
           script: |
-            source /home/xdekhckr/nodevenv/projektzespolowy_app/24/bin/activate
             cd /home/xdekhckr/projektzespolowy_app
-            npm install
+            /home/xdekhckr/nodevenv/projektzespolowy_app/24/bin/npm install
             mkdir -p tmp
             touch tmp/restart.txt
