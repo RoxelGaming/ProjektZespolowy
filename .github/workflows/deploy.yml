@@ -31,11 +31,14 @@ jobs:
           path: projekt-zespolowy-tiket-bot/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('projekt-zespolowy-tiket-bot/package-lock.json') }}
 
-      - name: 📦 Instalacja zależności
-        run: npm install
+      - name: 📦 Instalacja zależności (Czysta)
+        run: npm ci
 
       - name: 🔨 Budowanie projektu
         run: npm run build
+
+      - name: ✂️ Odchudzanie node_modules (Przyspiesza upload!)
+        run: npm prune --omit=dev
 
       - name: 🧹 Optymalizacja i przygotowanie pliku restartu
         run: |
@@ -46,11 +49,13 @@ jobs:
           rm -rf ../.git
           rm -f .env.example
           rm -f README.md
-          # Tworzymy magiczny plik restartu LOKALNIE w GitHubie
+          
+          # Wpisujemy aktualną datę do pliku. Zmienia to jego Hash/Zawartość,
+          # co GWARANTUJE, że zostanie wysłany przez FTP i zrestartuje cPanel!
           mkdir -p tmp
-          touch tmp/restart.txt
+          date > tmp/restart.txt
 
-      - name: 🚀 Wdrażanie na serwer Krystal (FTPS z limitem połączeń)
+      - name: 🚀 Wdrażanie na serwer Krystal (FTPS)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -58,7 +63,8 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           port: 21
-          concurrency: 5
+          # Zwiększamy liczbę jednoczesnych połączeń, co przyspieszy transfer
+          concurrency: 10
           local-dir: ./projekt-zespolowy-tiket-bot/
           server-dir: ./projektzespolowy_app/
           timeout: 600000
