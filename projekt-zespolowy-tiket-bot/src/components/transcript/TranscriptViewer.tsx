@@ -1,7 +1,7 @@
 "use client";
 
 import { MessageItem } from "./MessageItem";
-
+import { Virtuoso } from "react-virtuoso";
 import { TranscriptMessage } from "@/src/types/transcript";
 
 interface Props {
@@ -13,12 +13,13 @@ export function TranscriptViewer({
 }: Props) {
   return (
     <div className="bg-[#313338] rounded-lg overflow-hidden border border-[#1e1f22]">
-      {messages.map((message) => (
-        <MessageItem
-          key={message.id}
-          message={message}
-        />
-      ))}
+<Virtuoso
+  style={{ height: "80vh" }}
+  data={messages}
+  itemContent={(index, message) => (
+    <MessageItem key={message.id} message={message} />
+  )}
+/>
     </div>
   );
 }
