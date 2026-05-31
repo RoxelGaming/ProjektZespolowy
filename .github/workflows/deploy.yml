@@ -36,13 +36,18 @@ jobs:
       - name: 🧹 Usunięcie ciężkich plików (Naprawia błąd Timeout/EOF)
         run: |
           cd projekt-zespolowy-tiket-bot
+          # Usuwamy absolutnie wszystkie śmieci z kompilacji
           rm -rf .next/cache
+          rm -rf .next/turbopack
+          rm -f .next/trace
+          rm -f .next/trace-build
+          # Usuwamy pliki systemowe/zbędne
           rm -rf node_modules
           rm -rf .git
           rm -f .env.example
           rm -f README.md
 
-      - name: 🚀 Wdrażanie na serwer Krystal (FTPS)
+      - name: 🚀 Wdrażanie na serwer Krystal (FTPS z wydłużonym czasem)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -50,8 +55,8 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           port: 21
-          # Wskazujemy lokalny folder z aplikacją (zwróć uwagę na ukośnik na końcu)
           local-dir: ./projekt-zespolowy-tiket-bot/
-          # Jeśli Twoje konto FTP w cPanelu jest ograniczone TYLKO do folderu aplikacji, użyj "./"
-          # Jeśli konto ma dostęp do całego serwera, zmień to na np. "projektzespolowy_app/"
+          # Używamy "./", zakładając, że używasz tego dedykowanego, ograniczonego konta FTP
           server-dir: ./
+          # Wydłużamy limit czasu oczekiwania na odpowiedź serwera do 10 minut (600000 ms)
+          timeout: 600000
