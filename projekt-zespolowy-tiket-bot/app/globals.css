@@ -1,11 +1,15 @@
 @import "tailwindcss";
 
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  --headerWidth: 70px;
+  --headerColor: rgba(29, 29, 29, 0.935);
+  --sidebarWidth: 300px;
+  --sidebarCollapsedWidth: 70px;
 }
-
-
 
 @theme inline {
   --color-background: var(--background);
@@ -51,4 +55,23 @@ html.high-contrast {
   --foreground: #ffffff;
 
   color-scheme: dark;
+}
+/* 
+  Globalny reset i ustawienia bazowe dla Web Dashboardu.
+  Dzięki temu cała strona automatycznie zyska ciemną estetykę Discorda,
+  znikną domyślne marginesy przeglądarki, a czcionka będzie gładka.
+*/
+
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+    /* to nadpisuje rzeczy. moze dac tu  background: var(--background);
+color: var(--foreground); zamiast przypisania ? */
+    background-color: #101216;
+    color: #f2f3f5;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 }
