@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
+import { AccessibilityProvider } from '@/providers/AccessibilityProvider';
 
 import "./globals.css";
 import Navbar from "@/components/Navbar";
@@ -39,12 +40,14 @@ export default async function RootLayout({
       <body>
         
          <NextIntlClientProvider messages={messages}>
-           <Navbar>
-             <LanguageSwitcher />
-             <ThemeToggle />
-           </Navbar>
- 
-           {children}
+             <AccessibilityProvider>
+               <Navbar>
+                 <LanguageSwitcher />
+                 <ThemeToggle />
+               </Navbar>
+           
+               {children}
+             <AccessibilityProvider>
            <AccessibilityPanel />
          </NextIntlClientProvider>
        </body>
