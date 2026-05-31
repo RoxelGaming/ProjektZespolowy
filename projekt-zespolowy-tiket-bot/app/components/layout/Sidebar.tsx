@@ -1,50 +1,75 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname, useParams } from 'next/navigation';
 
 export default function Sidebar() {
+  const pathname = usePathname();
+  const params = useParams(); // To wyciąga [serverId] z adresu URL!
+  
+  const serverId = params?.serverId as string;
+
+  // Funkcja pomagająca z przedrostkiem produkcyjnym (tak jak w globalnym layout)
+  const getPath = (path: string) => {
+    const basePath = process.env.NODE_ENV === 'production' ? '/projektzespolowy' : '';
+    return `${basePath}${path}`;
+  };
+
   return (
-    <aside className="w-64 h-full bg-[var(--bg-color)] hidden md:flex flex-col">
-      <div className="h-16 flex items-center justify-center px-4 border-b border-[var(--border-color)]">
-        <h2 className="text-4xl font-bold text-white">
-          <Link href="/" >
-            <span className="text-indigo-400">Ticket</span>Bot
-          </Link>
-        </h2>
+    <aside className="w-64 border-r border-[#1e222b] bg-[#161920] p-6 flex flex-col gap-8 shrink-0">
+      {/* ... sekcja z logo i tytułem serwera ... */}
+      <div className="text-xl font-bold text-white flex items-center gap-2.5">
+        <span className="bg-[#5865F2] p-2 rounded-xl text-sm">🛡️</span> Zarządzanie
       </div>
-      
-      <nav className="flex-1 p-4 px-4 space-y-2 border-r border-gray-800">
-        <Link href="/dashboard" className="block px-4 py-2 rounded bg-gray-900 text-white hover:bg-gray-800 transition">
-          Przegląd
-        </Link>
-        <Link href="/dashboard/settings" className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
-          Ustawienia
-        </Link>
-        <Link href="/dashboard/transcripts" className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
-          Transcripts
-        </Link>
-        <Link href="/dashboard/ticketsPanels" className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
-          Tickets panels
-        </Link>
-        <Link href="/dashboard/forms" className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
-          Forms
-        </Link>
-        <Link href="/dashboard/staffTeams" className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
-          staff teams
-        </Link>
-        <Link href="/dashboard/tickets" className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
-          Tickets
-        </Link>
-        <Link href="/dashboard/blackList" className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
-          BlackList
-        </Link>
-        <div className="border-t border-gray-800">
-          <Link href="/dashboard/documentation" className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
-            Documentation
-          </Link>
-          <button className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
-           Wyloguj
-          </button>
-        </div>
+
+      <nav className="flex flex-col gap-1.5">
+        {/* PODGLĄD (Overview) - Zauważ, że link prowadzi teraz do /dashboard/[serverId] */}
+        <NavItem 
+          href={`/dashboard/${serverId}`} 
+          label="📊 Przegląd panelu" 
+          active={pathname === `/dashboard/${serverId}` || pathname === `/dashboard/${serverId}/`} 
+        />
+        
+        {/* USTAWIENIA - Link prowadzi do /dashboard/[serverId]/settings */}
+        <NavItem 
+          href={`/dashboard/${serverId}/settings`} 
+          label="⚙️ Ustawienia bota" 
+          active={pathname.includes('/settings')} 
+        />
+
+        {/* TICKETY - Link prowadzi do /dashboard/[serverId]/tickets */}
+        <NavItem 
+          href={`/dashboard/${serverId}/tickets`} 
+          label="🎫 Aktywne Tickety" 
+          active={pathname.includes('/tickets')} 
+        />
+        
+        {/* Tutaj możesz dodać kolejne zakładki np. Transcripts, Staff Teams */}
       </nav>
+
+      {/* Przycisk powrotu do wyboru serwerów */}
+      <div className="mt-auto pt-6 border-t border-[#1e222b]">
+        <Link href={getPath('/dashboard')} className="text-sm font-medium text-red-400 hover:text-red-300 transition flex items-center gap-2">
+          ← Zmień serwer
+        </Link>
+      </div>
     </aside>
   );
+
+  // Komponent wewnętrzny do renderowania linków
+  function NavItem({ href, label, active }: { href: string; label: string; active: boolean }) {
+    const basePath = process.env.NODE_ENV === 'production' ? '/projektzespolowy' : '';
+    return (
+      <Link 
+        href={`${basePath}${href}`} 
+        className={`px-4 py-3 rounded-xl text-sm font-medium transition duration-200 block ${
+          active 
+            ? 'bg-[#5865F2] text-white shadow-lg shadow-[#5865f2]/10 font-semibold' 
+            : 'text-[#9ca3af] hover:bg-[#1e222b] hover:text-white'
+        }`}
+      >
+        {label}
+      </Link>
+    );
+  }
 }
