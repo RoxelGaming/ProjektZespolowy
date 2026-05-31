@@ -1,9 +1,11 @@
 import type { NextConfig } from "next";
 
+// Sprawdzamy, czy aplikacja buduje się w trybie produkcyjnym
+const isProd = process.env.NODE_ENV === 'production';
+
 const nextConfig: NextConfig = {
-  // Dzięki temu ustawieniu Next.js będzie wiedział, że aplikacja 
-  // znajduje się w podfolderze /projektzespolowy
-  basePath: "/projektzespolowy",
+  // Jeśli to produkcja -> użyj /projektzespolowy, jeśli lokalny dev -> zostaw puste
+  basePath: isProd ? "/projektzespolowy" : "",
 };
 
 export default nextConfig;
