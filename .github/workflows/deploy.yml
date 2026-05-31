@@ -33,6 +33,12 @@ jobs:
           mkdir -p tmp
           touch tmp/restart.txt
 
+      - name: 🔄 Przygotowanie triggera restartu dla cPanelu
+        run: |
+          cd projekt-zespolowy-tiket-bot
+          mkdir -p tmp
+          touch tmp/restart.txt
+
       - name: 🧹 Usunięcie ciężkich plików (Naprawia błąd Timeout/EOF)
         run: |
           cd projekt-zespolowy-tiket-bot
@@ -60,3 +66,4 @@ jobs:
           server-dir: ./
           # Wydłużamy limit czasu oczekiwania na odpowiedź serwera do 10 minut (600000 ms)
           timeout: 600000
+      
