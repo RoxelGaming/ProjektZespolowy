@@ -10,12 +10,12 @@ export default function LandingPage() {
         <div className="flex items-center gap-3">
           {/* Wykorzystanie Twojego oryginalnego logo z zachowaniem proporcji */}
           <div className="relative w-9 h-9 overflow-hidden rounded-xl">
-            <img 
-              src="LOGO.png" /* Ścieżka relatywna idealnie dopasuje się do podkatalogu */
-              alt="TicketBot Logo" 
-              className="object-cover w-full h-full"
-            />
-          </div>
+  <img 
+    src="/projektzespolowy/LOGO.png" /* Pełna, bezpośrednia ścieżka produkcyjna */
+    alt="TicketBot Logo" 
+    className="object-cover w-full h-full"
+  />
+</div>
           <span className="font-bold text-lg tracking-wide bg-gradient-to-r from-white to-[#9ca3af] bg-clip-text text-transparent">
             TicketBot
           </span>
