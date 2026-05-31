@@ -1,60 +1,92 @@
-"use client"
+'use client';
 
-import { useToast } from '../contexts/ToastContext';
+import { useState } from 'react';
+import Link from 'next/link';
+
+// Przykładowe dane serwerów użytkownika pobrane z Discord API
+const mockServers = [
+  { id: '123456789', name: 'Projekt Zespołowy Dev', isManaged: true, memberCount: 15 },
+  { id: '987654321', name: 'Support Community', isManaged: true, memberCount: 142 },
+  { id: '555666777', name: 'GamerZone UJD', isManaged: false, memberCount: 89 },
+];
 
 export default function DashboardPage() {
-  const { addToast } = useToast();
+  const [loading, setLoading] = useState(false);
+
+  // Funkcja dodająca prefiks produkcyjny cPanelu
+  const getPath = (path: string) => {
+    const basePath = process.env.NODE_ENV === 'production' ? '/projektzespolowy' : '';
+    return `${basePath}${path}`;
+  };
+
+  const handleRefresh = () => {
+    setLoading(true);
+    setTimeout(() => setLoading(false), 1000);
+  };
 
   return (
-    <div className="space-y-6 text-text-main">
-
-      {/* Przycisk testowy dla powiadomień */}
-      <button 
-        onClick={() => addToast('Właśnie zaktualizowaliśmy wszystkie kolory na zmienne globalne! Działa to perfekcyjnie.', 'success')}
-        className="bg-brand-base hover:bg-brand-hover px-4 py-2 rounded-md font-medium transition-colors shadow-lg shadow-brand-base/20"
-      >
-        Przetestuj globalne powiadomienie
-      </button>
-
-      {/* Górna sekcja z powitaniem */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Przegląd panelu</h1>
-        <p className="text-text-muted mt-1">Witaj w centrum zarządzania Twoim Ticket Botem.</p>
+    <div className="space-y-8 animate-fadeIn">
+      {/* Nagłówek i odświeżanie (SCRUM-107) */}
+      <div className="flex justify-between items-center border-b border-[#1e222b] pb-5">
+        <div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Wybór Serwera</h1>
+          <p className="text-[#9ca3af] text-sm mt-1">Wybierz serwer z autoryzacją Discord OAuth2, aby zarządzać systemem ticketów.</p>
+        </div>
+        <button 
+          onClick={handleRefresh}
+          className="bg-[#1e222b] hover:bg-[#252a36] text-sm font-semibold px-4 py-2.5 rounded-xl transition border border-[#2e3545] text-white flex items-center gap-2"
+        >
+          {loading ? 'Odświeżanie...' : '🔄 Odśwież listę'}
+        </button>
       </div>
 
-      {/* Siatka ze statystykami — Stats grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
-        {/* Karta 1: Otwarte tickety */}
-        <div className="bg-surface-panel border border-border-subtle p-6 rounded-xl">
-          <div className="text-text-muted text-sm font-medium">Otwarte zgłoszenia</div>
-          <div className="text-4xl font-bold mt-2 text-brand-light">12</div>
-          <div className="text-xs text-status-success mt-1">▲ 3 nowe w ciągu ostatniej godziny</div>
+      {/* SCRUM-102: Kontener Twoich Serwerów */}
+      <section>
+        <h2 className="text-xs font-bold text-[#6b7280] uppercase tracking-widest mb-4">Twoje Serwery (Aktywny bot)</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {mockServers.filter(s => s.isManaged).map(server => (
+            <div key={server.id} className="bg-[#161920] border border-[#1e222b] p-6 rounded-2xl hover:border-[#5865F2] transition flex flex-col justify-between h-48 group">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 shrink-0 bg-[#1e222b] rounded-2xl flex items-center justify-center text-lg font-bold text-[#5865F2] border border-[#2e3545] group-hover:border-[#5865F2]/50 transition">
+                  {server.name.charAt(0)}
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-base leading-tight">{server.name}</h3>
+                  <p className="text-xs text-[#6b7280] mt-1">{server.memberCount} członków zespołu</p>
+                </div>
+              </div>
+              {/* Dynamiczne przekierowanie do konkretnego ID serwera */}
+              <Link href={getPath(`/dashboard/${server.id}/settings`)} className="w-full text-center bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-2.5 px-4 rounded-xl text-sm transition shadow-lg shadow-[#5865f2]/10">
+                Przejdź do zarządzania
+              </Link>
+            </div>
+          ))}
         </div>
+      </section>
 
-        {/* Karta 2: Zamknięte zgłoszenia */}
-        <div className="bg-surface-panel border border-border-subtle p-6 rounded-xl">
-          <div className="text-text-muted text-sm font-medium">Zamknięte dzisiaj</div>
-          <div className="text-4xl font-bold mt-2 text-text-main">45</div>
-          <div className="text-xs text-text-muted mt-1">Średni czas reakcji: 14 min</div>
+      {/* SCRUM-104: Kontener Pozostałych Serwerów */}
+      <section className="pt-4">
+        <h2 className="text-xs font-bold text-[#6b7280] uppercase tracking-widest mb-4">Pozostałe Serwery (Zaproś bota)</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {mockServers.filter(s => !s.isManaged).map(server => (
+            <div key={server.id} className="bg-[#161920] border border-[#1e222b] p-6 rounded-2xl flex flex-col justify-between h-48">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 shrink-0 bg-[#1e222b] rounded-2xl flex items-center justify-center text-lg font-bold text-[#9ca3af] border border-[#2e3545]">
+                  {server.name.charAt(0)}
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-base leading-tight">{server.name}</h3>
+                  <p className="text-xs text-[#6b7280] mt-1">{server.memberCount} członków</p>
+                </div>
+              </div>
+              {/* Przycisk zaproszenia bota (SCRUM-106) */}
+              <button className="w-full bg-[#1e222b] hover:bg-[#252a36] text-[#9ca3af] hover:text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition border border-[#2e3545]">
+                Autoryzuj i zaproś bota
+              </button>
+            </div>
+          ))}
         </div>
-
-        {/* Karta 3: Status bota */}
-        <div className="bg-surface-panel border border-border-subtle p-6 rounded-xl">
-          <div className="text-text-muted text-sm font-medium">Aktywne serwery</div>
-          <div className="text-4xl font-bold mt-2 text-status-success">1</div>
-          <div className="text-xs text-text-muted mt-1">Status bota: Online</div>
-        </div>
-        
-      </div>
-
-      {/* Dolna sekcja na listę ostatnich zgłoszeń */}
-      <div className="bg-surface-panel border border-border-subtle rounded-xl p-6">
-        <h3 className="text-xl font-bold mb-4">Ostatnia aktywność</h3>
-        <div className="text-text-muted text-sm">
-          Tutaj w przyszłości pojawi się lista aktywnych ticketów pobierana bezpośrednio z bazy danych.
-        </div>
-      </div>
+      </section>
     </div>
   );
 }
