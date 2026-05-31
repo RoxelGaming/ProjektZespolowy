@@ -1,0 +1,26 @@
+'use client';
+import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+
+export default function Sidebar() {
+  const t = useTranslations('sidebar'); // odwołuje się do kluczy w pliku sidebar
+  const navItems = [
+    { key: 'dashboard', href: '/dashboard' },
+    { key: 'tickets',   href: '/tickets' },
+    { key: 'forms',     href: '/forms' },
+    { key: 'staffTeams', href: '/staff-teams' },
+    { key: 'settings',  href: '/settings' },
+    { key: 'blacklist', href: '/blacklist' },
+    { key: 'transcripts', href: '/transcripts' }
+  ];
+
+  return (
+    <nav>
+      {navItems.map(item => (
+        <Link key={item.key} href={item.href}>
+          {t(item.key)}
+        </Link>
+      ))}
+    </nav>
+  );
+}
