@@ -3,43 +3,46 @@ name: Deploy to cPanel
 on:
   push:
     branches:
-      - main # Akcja uruchamia się tylko przy pushu na główną gałąź
+      - main 
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🚚 Pobranie kodu (Checkout)
+      - name: 🚚 Pobranie kodu
         uses: actions/checkout@v4
 
       - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x' # Ta sama wersja, której używamy w cPanelu
+          node-version: '20.x' 
 
       - name: 📦 Instalacja zależności
-        run: npm install
+        # Zmienione: Najpierw wchodzimy do folderu aplikacji
+        run: cd projekt-zespolowy-tiket-bot && npm install
 
-      - name: 🔨 Budowanie projektu (Next.js & TypeScript)
-        run: npm run build
+      - name: 🔨 Budowanie projektu
+        run: cd projekt-zespolowy-tiket-bot && npm run build
 
       - name: 🔄 Przygotowanie triggera restartu dla cPanelu
         run: |
+          cd projekt-zespolowy-tiket-bot
           mkdir -p tmp
           touch tmp/restart.txt
 
-      - name: 🚀 Wdrażanie na serwer (FTP Deploy)
+      - name: 🚀 Wdrażanie na serwer FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: /
+          # Zmienione: Wskazujemy konkretny folder z aplikacją do wysłania
+          local-dir: ./projekt-zespolowy-tiket-bot/
           exclude: |
             **/.git*
             **/.git*/**
             **/node_modules/**
             .env.example
             README.md
-            .gitignore
