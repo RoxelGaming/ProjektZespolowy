@@ -1,0 +1,74 @@
+name: Deploy to cPanel
+
+on:
+  push:
+    branches:
+      - main 
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚚 Pobranie kodu
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+
+      - name: 💾 Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: projekt-zespolowy-tiket-bot/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('projekt-zespolowy-tiket-bot/package-lock.json') }}
+
+      - name: 📦 Instalacja zależności
+        run: cd projekt-zespolowy-tiket-bot && npm ci
+
+      - name: 🔨 Budowanie projektu
+        run: cd projekt-zespolowy-tiket-bot && npm run build
+
+      - name: 🧹 Usunięcie ciężkich plików (Optymalizacja transferu)
+        run: |
+          cd projekt-zespolowy-tiket-bot
+          # Usuwamy śmieci z kompilacji, ale zostawiamy node_modules dla cache'u
+          rm -rf .next/cache
+          rm -rf .next/turbopack
+          rm -f .next/trace
+          rm -f .next/trace-build
+          rm -rf .git
+          rm -f .env.example
+          rm -f README.md
+
+      - name: 🚀 Wdrażanie na serwer Krystal (FTPS z limitem połączeń)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          port: 21
+          concurrency: 5
+          local-dir: ./projekt-zespolowy-tiket-bot/
+          server-dir: ./projektzespolowy_app/
+          timeout: 600000
+
+          
+      - name: 🤖 Automatyczny NPM Install i Restart na serwerze cPanel
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 722 
+          script: |
+            source /home/xdekhckr/nodevenv/projektzespolowy_app/24/bin/activate
+            cd /home/xdekhckr/projektzespolowy_app
+            npm install
+            mkdir -p tmp
+            touch tmp/restart.txt
