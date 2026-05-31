@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-export default function SettingsPage() {
-  return (
-    <div>
-      <h1>Ustawienia</h1>
-      <p>Miejsce na konfigurację ticketów.</p>
-=======
 "use client"
 
 import { useState } from 'react';
@@ -185,7 +178,6 @@ export default function SettingsPage() {
         </button>
       </div>
 
->>>>>>> develop
     </div>
   );
 }
