@@ -21,27 +21,31 @@ jobs:
         with:
           node-version: '24.x'
 
+      - name: 💾 Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: projekt-zespolowy-tiket-bot/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('projekt-zespolowy-tiket-bot/package-lock.json') }}
+
       - name: 📦 Instalacja zależności
-        run: cd projekt-zespolowy-tiket-bot && npm install
+        run: cd projekt-zespolowy-tiket-bot && npm ci
 
       - name: 🔨 Budowanie projektu
         run: cd projekt-zespolowy-tiket-bot && npm run build
 
-      - name: 🧹 Usunięcie ciężkich plików (Naprawia błąd Timeout/EOF)
+      - name: 🧹 Usunięcie ciężkich plików (Optymalizacja transferu)
         run: |
           cd projekt-zespolowy-tiket-bot
-          # Usuwamy absolutnie wszystkie śmieci z kompilacji
+          # Usuwamy śmieci z kompilacji, ale zostawiamy node_modules dla cache'u
           rm -rf .next/cache
           rm -rf .next/turbopack
           rm -f .next/trace
           rm -f .next/trace-build
-          # Usuwamy pliki systemowe/zbędne
-          rm -rf node_modules
           rm -rf .git
           rm -f .env.example
           rm -f README.md
 
-      - name: 🚀 Wdrażanie na serwer Krystal (FTPS z wydłużonym czasem)
+      - name: 🚀 Wdrażanie na serwer Krystal (FTPS z limitem połączeń)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
@@ -49,29 +53,22 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           port: 21
+          concurrency: 5
           local-dir: ./projekt-zespolowy-tiket-bot/
-          # BARDZO WAŻNE: Wskazujemy konkretny folder bota, by nie nabałaganić w root cPanelu!
           server-dir: ./projektzespolowy_app/
           timeout: 600000
 
+          
       - name: 🤖 Automatyczny NPM Install i Restart na serwerze cPanel
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          port: 722 # Niestandardowy port SSH hostingu Krystal
-          # Skrypt wykonuje się bezpiecznie po przesłaniu plików:
+          port: 722 
           script: |
-            # 1. Wejście do wirtualnego środowiska Node.js
             source /home/xdekhckr/nodevenv/projektzespolowy_app/24/bin/activate
-            
-            # 2. Wejście do folderu Twojej aplikacji
             cd /home/xdekhckr/projektzespolowy_app
-            
-            # 3. Automatyczna instalacja nowych modułów (jeśli są)
             npm install
-            
-            # 4. Wyzwolenie twardego restartu aplikacji po zakończeniu instalacji
             mkdir -p tmp
             touch tmp/restart.txt
