@@ -1,0 +1,30 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "error": "An error occurred"
+  },
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "tickets": "Tickets",
+    "forms": "Forms",
+    "staffTeams": "Staff Teams",
+    "settings": "Settings",
+    "blacklist": "Blacklist",
+    "transcripts": "Transcripts",
+    "mainSelection": "Main Selection"
+  },
+  "panels": {
+    "createPanel": "Create Panel",
+    "editPanel": "Edit Panel"
+  },
+  "settings": {
+    "title": "Settings",
+    "saved": "Settings saved successfully!"
+  },
+  "notifications": {
+    "welcomeMessage": "Welcome, {name}!",
+    "errorMessage": "Error: {message}"
+  }
+}
