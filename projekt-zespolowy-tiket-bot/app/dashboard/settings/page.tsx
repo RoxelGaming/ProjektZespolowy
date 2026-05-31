@@ -177,8 +177,6 @@ export default function SettingsPage() {
           )}
         </button>
       </div>
-
->>>>>>> develop
     </div>
   );
 }

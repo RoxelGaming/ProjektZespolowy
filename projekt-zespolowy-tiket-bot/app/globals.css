@@ -1,13 +1,5 @@
 @import "tailwindcss";
 
-<<<<<<< HEAD
-/* 
-  Globalny reset i ustawienia bazowe dla Web Dashboardu.
-  Dzięki temu cała strona automatycznie zyska ciemną estetykę Discorda,
-  znikną domyślne marginesy przeglądarki, a czcionka będzie gładka.
-*/
-=======
->>>>>>> develop
 @layer base {
   html, body {
     margin: 0;
@@ -18,8 +10,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-<<<<<<< HEAD
-=======
+
 }
 
 :root {
@@ -69,5 +60,4 @@
       opacity: 1;
     }
   }
->>>>>>> develop
 }
