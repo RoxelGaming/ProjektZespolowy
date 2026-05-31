@@ -8,13 +8,6 @@ export default function ServerOverviewPage({ params }: { params: { serverId: str
 
   return (
     <div className="space-y-6 text-[#f2f3f5] animate-fadeIn">
-      {/* Przycisk testowy dla powiadomień */}
-      <button 
-        onClick={() => addToast('Właśnie zaktualizowaliśmy wszystkie kolory na zmienne globalne! Działa to perfekcyjnie.', 'success')}
-        className="bg-[#5865F2] hover:bg-[#4752C4] px-4 py-2 rounded-md font-medium transition-colors shadow-lg shadow-[#5865f2]/20 text-white"
-      >
-        Przetestuj globalne powiadomienie
-      </button>
 
       {/* Górna sekcja z powitaniem */}
       <div>

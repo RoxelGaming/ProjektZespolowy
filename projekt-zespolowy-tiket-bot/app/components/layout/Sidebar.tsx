@@ -2,74 +2,87 @@
 
 import Link from 'next/link';
 import { usePathname, useParams } from 'next/navigation';
+import SidebarNavItem from './SidebarNavItem';
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const params = useParams(); // To wyciąga [serverId] z adresu URL!
-  
+  const params = useParams();
   const serverId = params?.serverId as string;
 
-  // Funkcja pomagająca z przedrostkiem produkcyjnym (tak jak w globalnym layout)
   const getPath = (path: string) => {
     const basePath = process.env.NODE_ENV === 'production' ? '/projektzespolowy' : '';
     return `${basePath}${path}`;
   };
 
   return (
-    <aside className="w-64 border-r border-[#1e222b] bg-[#161920] p-6 flex flex-col gap-8 shrink-0">
-      {/* ... sekcja z logo i tytułem serwera ... */}
-      <div className="text-xl font-bold text-white flex items-center gap-2.5">
-        <span className="bg-[#5865F2] p-2 rounded-xl text-sm">🛡️</span> Zarządzanie
-      </div>
-
-      <nav className="flex flex-col gap-1.5">
-        {/* PODGLĄD (Overview) - Zauważ, że link prowadzi teraz do /dashboard/[serverId] */}
-        <NavItem 
-          href={`/dashboard/${serverId}`} 
-          label="📊 Przegląd panelu" 
-          active={pathname === `/dashboard/${serverId}` || pathname === `/dashboard/${serverId}/`} 
+    <>
+      {/* Ciemne tło rozmywające (Backdrop) - widoczne tylko na mobile gdy menu jest otwarte */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden transition-opacity"
+          onClick={onClose}
         />
-        
-        {/* USTAWIENIA - Link prowadzi do /dashboard/[serverId]/settings */}
-        <NavItem 
-          href={`/dashboard/${serverId}/settings`} 
-          label="⚙️ Ustawienia bota" 
-          active={pathname.includes('/settings')} 
-        />
+      )}
 
-        {/* TICKETY - Link prowadzi do /dashboard/[serverId]/tickets */}
-        <NavItem 
-          href={`/dashboard/${serverId}/tickets`} 
-          label="🎫 Aktywne Tickety" 
-          active={pathname.includes('/tickets')} 
-        />
-        
-        {/* Tutaj możesz dodać kolejne zakładki np. Transcripts, Staff Teams */}
-      </nav>
+      {/* Kontener Sidebaru */}
+      <aside className={`
+        fixed inset-y-0 left-0 z-50 w-64 h-full bg-[#161920] border-r border-[#1e222b] p-6 
+        flex flex-col gap-8 shrink-0 select-none
+        transform transition-transform duration-300 ease-in-out
+        md:static md:translate-x-0
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        {/* Nagłówek Sidebaru (z przyciskiem zamykania X na mobile) */}
+        <div className="flex items-center justify-between">
+          <div className="text-xl font-bold text-white flex items-center gap-2.5">
+            <span className="bg-[#5865F2] p-2 rounded-xl text-sm shadow-md shadow-[#5865f2]/20">
+              {serverId ? '🛡️' : '🤖'}
+            </span> 
+            {serverId ? 'Zarządzanie' : 'TicketBot'}
+          </div>
+          
+          <button onClick={onClose} className="md:hidden text-[#9ca3af] hover:text-white p-1 rounded-md bg-[#1e222b]">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-      {/* Przycisk powrotu do wyboru serwerów */}
-      <div className="mt-auto pt-6 border-t border-[#1e222b]">
-        <Link href={getPath('/dashboard')} className="text-sm font-medium text-red-400 hover:text-red-300 transition flex items-center gap-2">
-          ← Zmień serwer
-        </Link>
-      </div>
-    </aside>
+        {/* Nawigacja */}
+        <nav className="flex flex-col gap-1.5 flex-1 overflow-y-auto">
+          {serverId ? (
+            <>
+              <SidebarNavItem href={`/dashboard/${serverId}`} label="📊 Przegląd panelu" active={pathname === `/dashboard/${serverId}` || pathname === `/dashboard/${serverId}/`} onClick={onClose} />
+              <SidebarNavItem href={`/dashboard/${serverId}/settings`} label="⚙️ Ustawienia bota" active={pathname.includes('/settings')} onClick={onClose} />
+              <SidebarNavItem href={`/dashboard/${serverId}/tickets`} label="🎫 Aktywne Tickety" active={pathname.includes('/tickets')} onClick={onClose} />
+            </>
+          ) : (
+            <>
+              <SidebarNavItem href="/dashboard" label="🛡️ Wybór Serwerów" active={pathname === '/dashboard' || pathname === '/dashboard/'} onClick={onClose} />
+              <SidebarNavItem href="/dashboard/security" label="🔑 Bezpieczeństwo konta" active={pathname.includes('/security')} onClick={onClose} />
+              <SidebarNavItem href="/dashboard/gdpr" label="⚖️ Wnioski RODO / GDPR" active={pathname.includes('/gdpr')} onClick={onClose} />
+            </>
+          )}
+        </nav>
+
+        {/* Dolna sekcja */}
+        <div className="pt-6 border-t border-[#1e222b]">
+          {serverId ? (
+            <Link href={getPath('/dashboard')} onClick={onClose} className="text-sm font-medium text-red-400 hover:text-red-300 transition flex items-center gap-2">
+              ← Zmień serwer
+            </Link>
+          ) : (
+            <Link href={getPath('/')} onClick={onClose} className="text-sm font-medium text-[#6b7280] hover:text-white transition flex items-center gap-2">
+              ← Strona główna
+            </Link>
+          )}
+        </div>
+      </aside>
+    </>
   );
-
-  // Komponent wewnętrzny do renderowania linków
-  function NavItem({ href, label, active }: { href: string; label: string; active: boolean }) {
-    const basePath = process.env.NODE_ENV === 'production' ? '/projektzespolowy' : '';
-    return (
-      <Link 
-        href={`${basePath}${href}`} 
-        className={`px-4 py-3 rounded-xl text-sm font-medium transition duration-200 block ${
-          active 
-            ? 'bg-[#5865F2] text-white shadow-lg shadow-[#5865f2]/10 font-semibold' 
-            : 'text-[#9ca3af] hover:bg-[#1e222b] hover:text-white'
-        }`}
-      >
-        {label}
-      </Link>
-    );
-  }
 }
