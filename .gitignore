@@ -17,6 +17,7 @@ Thumbs.db
 *.swp
 
 # --- Node / Pakiety (Node / Packages) ---
+node_modules
 node_modules/
 /dist/
 /build/
@@ -39,3 +40,4 @@ yarn-error.log*
 # --- Cache (Cache) ---
 .cache/
 .sass-cache/
+
