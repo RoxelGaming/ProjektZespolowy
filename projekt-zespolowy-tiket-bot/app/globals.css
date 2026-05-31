@@ -1,6 +1,12 @@
 @import "tailwindcss";
 
 @theme {
+
+  /* Kolory */
+  --bg-color: var(--color-slate-800);
+  --border-color: var(--color-slate-500);
+
+  /* animacje */
   --animate-wave-slow: wave-spin 12s infinite linear;
   --animate-wave-fast: wave-spin 10s infinite linear;
 

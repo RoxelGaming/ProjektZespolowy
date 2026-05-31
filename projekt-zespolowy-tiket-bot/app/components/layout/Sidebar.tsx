@@ -2,8 +2,8 @@ import Link from 'next/link';
 
 export default function Sidebar() {
   return (
-    <aside className="w-64 h-full bg-gray-950 hidden md:flex flex-col">
-      <div className="h-16 flex items-center justify-center px-4 border-b border-gray-800">
+    <aside className="w-64 h-full bg-[var(--bg-color)] hidden md:flex flex-col">
+      <div className="h-16 flex items-center justify-center px-4 border-b border-[var(--border-color)]">
         <h2 className="text-4xl font-bold text-white">
           <Link href="/" >
             <span className="text-indigo-400">Ticket</span>Bot
@@ -18,6 +18,32 @@ export default function Sidebar() {
         <Link href="/dashboard/settings" className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
           Ustawienia
         </Link>
+        <Link href="/dashboard/transcripts" className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
+          Transcripts
+        </Link>
+        <Link href="/dashboard/ticketsPanels" className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
+          Tickets panels
+        </Link>
+        <Link href="/dashboard/forms" className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
+          Forms
+        </Link>
+        <Link href="/dashboard/staffTeams" className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
+          staff teams
+        </Link>
+        <Link href="/dashboard/tickets" className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
+          Tickets
+        </Link>
+        <Link href="/dashboard/blackList" className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
+          BlackList
+        </Link>
+        <div className="border-t border-gray-800">
+          <Link href="/dashboard/documentation" className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
+            Documentation
+          </Link>
+          <button className="block px-4 py-2 rounded text-gray-400 hover:bg-gray-800 hover:text-white transition">
+           Wyloguj
+          </button>
+        </div>
       </nav>
     </aside>
   );
