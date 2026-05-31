@@ -37,16 +37,17 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body>
-        <NextIntlClientProvider messages={messages}>
-          <Navbar>
-            <LanguageSwitcher />
-            <ThemeToggle />
-          </Navbar>
-
-          {children}
-          <AccessibilityPanel />
-        </NextIntlClientProvider>
-      </body>
-    </html>
+        
+         <NextIntlClientProvider messages={messages}>
+           <Navbar>
+             <LanguageSwitcher />
+             <ThemeToggle />
+           </Navbar>
+ 
+           {children}
+           <AccessibilityPanel />
+         </NextIntlClientProvider>
+       </body>
+     </html>
   );
 }
