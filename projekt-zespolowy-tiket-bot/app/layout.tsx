@@ -7,6 +7,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import ThemeToggle from "@/components/ThemeToggle";
+import AccessibilityPanel from "@/components/ui/AccessibilityPanel";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,6 +44,7 @@ export default async function RootLayout({
           </Navbar>
 
           {children}
+          <AccessibilityPanel />
         </NextIntlClientProvider>
       </body>
     </html>
