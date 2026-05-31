@@ -1,0 +1,30 @@
+{
+  "common": {
+    "save": "Zapisz",
+    "cancel": "Anuluj",
+    "confirm": "Potwierdź",
+    "error": "Wystąpił błąd"
+  },
+  "sidebar": {
+    "dashboard": "Panel",
+    "tickets": "Tickety",
+    "forms": "Formularze",
+    "staffTeams": "Zespoły wsparcia",
+    "settings": "Ustawienia",
+    "blacklist": "Lista zablokowanych",
+    "transcripts": "Transkrypcje",
+    "mainSelection": "Główna selekcja"
+  },
+  "panels": {
+    "createPanel": "Utwórz panel",
+    "editPanel": "Edytuj panel"
+  },
+  "settings": {
+    "title": "Ustawienia",
+    "saved": "Ustawienia zostały zapisane!"
+  },
+  "notifications": {
+    "welcomeMessage": "Witaj, {name}!",
+    "errorMessage": "Błąd: {message}"
+  }
+}
