@@ -1,6 +1,10 @@
 "use client";
 
 import { FileText } from "lucide-react";
+import { ImageAttachment } from "./ImageAttachment";
+import { VideoAttachment } from "./VideoAttachment";
+import { FileAttachment } from "./FileAttachment";
+
 
 interface Props {
   attachment: {
@@ -25,26 +29,30 @@ export function AttachmentRenderer({
       />
     );
   }
-
-  if (attachment.fileType.startsWith("video/")) {
-    return (
-      <video
-        controls
-        preload="metadata"
-        className="max-w-sm rounded-lg mt-2"
-      >
-        <source src={fileUrl} />
-      </video>
-    );
-  }
-
+if (attachment.fileType.startsWith("image/")) {
   return (
-    <a
-      href={fileUrl}
-      target="_blank"
-      rel="noreferrer"
-      className="flex items-center gap-2 p-3 mt-2 bg-[#2b2d31] border border-gray-700 rounded-lg hover:bg-[#313338]"
-    >
+    <ImageAttachment
+      id={attachment.id}
+      fileName={attachment.fileName}
+    />
+  );
+}
+
+if (attachment.fileType.startsWith("video/")) {
+  return (
+    <VideoAttachment
+      id={attachment.id}
+    />
+  );
+}
+
+return (
+  <FileAttachment
+    id={attachment.id}
+    fileName={attachment.fileName}
+    size={attachment.fileSize}
+  />
+);
       <FileText size={18} />
       <span>{attachment.fileName}</span>
     </a>
