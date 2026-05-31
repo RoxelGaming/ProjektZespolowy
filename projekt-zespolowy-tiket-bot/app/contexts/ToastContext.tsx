@@ -44,7 +44,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     const getToastColors = (type: Toast['type']) => {
         switch (type) {
             case 'success':
-                return 'bg-green-500 text-green-700';
+                return 'bg-gray-950 text-green-700 border border-gray-800';
             case 'error':
                 return 'bg-red-500 text-red-100';
             case 'info':
@@ -57,15 +57,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     const getPositionClasses = (position: ToastPosition) => {
         switch (position) {
             case 'top-right':
-                return 'top-4 right-4';
+                return 'top-[var(--header-height)] right-4';
             case 'top-left':
-                return '...';
+                return 'left-4 top-[var(--header-height)]';
             case 'bottom-right':
-                return '...';
+                return 'right-4 bottom-4';
             case 'bottom-left':
-                return '...';
+                return 'left-4 bottom-4';
             default:
-                return 'top-4 right-4';
+                return 'top-[var(--header-height)] right-4';
         }
     }
 

@@ -1,10 +1,17 @@
 @import "tailwindcss";
 
+
+:root {
+  --header-height: 4rem;
+}
+
 @theme {
 
   /* Kolory */
   --bg-color: var(--color-slate-800);
   --border-color: var(--color-slate-500);
+
+  --color-background-black: #221122;
 
   /* animacje */
   --animate-wave-slow: wave-spin 12s infinite linear;
