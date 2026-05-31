@@ -12,8 +12,6 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     
-    # KLUCZOWA ZMIANA:
-    # Ustawiamy domyślny folder roboczy dla wszystkich komend 'run'
     defaults:
       run:
         working-directory: ./projekt-zespolowy-tiket-bot
@@ -27,23 +25,31 @@ jobs:
         with:
           node-version: '24.x'
 
+      - name: 🔍 DIAGNOSTYKA - Co widzi GitHub?
+        run: |
+          echo "--- SPRAWDZAM FOLDERY ---"
+          pwd
+          ls -la
+          echo "--- ZAWARTOSC PACKAGE.JSON ---"
+          cat package.json
+          echo "------------------------------"
+
       - name: 💾 Cache node_modules
         uses: actions/cache@v4
         with:
-          # Akcje 'uses' zawsze działają z głównego katalogu repozytorium, więc ścieżka zostaje
           path: projekt-zespolowy-tiket-bot/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('projekt-zespolowy-tiket-bot/package-lock.json') }}
 
       - name: 📦 Instalacja zależności
-        # Nie potrzebujemy już 'cd', bo 'defaults' robi to za nas
-        run: npm ci
+        # ZMIANA: Używamy 'npm install' zamiast 'npm ci'. 
+        # Dzięki temu wymusimy odczyt z package.json nawet jeśli package-lock.json jest stary.
+        run: npm install
 
       - name: 🔨 Budowanie projektu
         run: npm run build
 
       - name: 🧹 Usunięcie ciężkich plików (Optymalizacja transferu)
         run: |
-          # Jesteśmy już w odpowiednim folderze, usuwamy śmieci z kompilacji
           rm -rf .next/cache
           rm -rf .next/turbopack
           rm -f .next/trace
@@ -61,11 +67,10 @@ jobs:
           protocol: ftps
           port: 21
           concurrency: 5
-          # Ta akcja też wymaga pełnej ścieżki
           local-dir: ./projekt-zespolowy-tiket-bot/
           server-dir: ./projektzespolowy_app/
           timeout: 600000
-
+          
       - name: 🤖 Automatyczny NPM Install i Restart na serwerze cPanel
         uses: appleboy/ssh-action@master
         with:
