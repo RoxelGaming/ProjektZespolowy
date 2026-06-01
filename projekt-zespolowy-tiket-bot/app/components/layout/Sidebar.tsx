@@ -56,6 +56,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               
               {/* TUTAJ DODALIŚMY NOWY LINK DO KREATORA PANELI: */}
               <SidebarNavItem href={`/dashboard/${serverId}/panels`} label="📝 Kreator Paneli" active={pathname.includes('/panels')} onClick={onClose} />
+              <SidebarNavItem href={`/dashboard/${serverId}/staff`} label="👥 Zespoły i Blacklist" active={pathname.includes('/staff')} onClick={onClose} />
               
               <SidebarNavItem href={`/dashboard/${serverId}/settings`} label="⚙️ Ustawienia bota" active={pathname.includes('/settings')} onClick={onClose} />
               <SidebarNavItem href={`/dashboard/${serverId}/tickets`} label="🎫 Aktywne Tickety" active={pathname.includes('/tickets')} onClick={onClose} />
