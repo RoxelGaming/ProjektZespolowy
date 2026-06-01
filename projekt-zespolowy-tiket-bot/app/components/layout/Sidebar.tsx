@@ -16,7 +16,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
     <>
-      {/* Ciemne tło rozmywające (Backdrop) dla mobile */}
+      {/* Ciemne tło rozmywające (Backdrop) - widoczne tylko na mobile gdy menu jest otwarte */}
       {isOpen && (
         <div 
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden transition-opacity"
@@ -32,7 +32,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         md:static md:translate-x-0
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        {/* Nagłówek Sidebaru */}
+        {/* Nagłówek Sidebaru (z przyciskiem zamykania X na mobile) */}
         <div className="flex items-center justify-between">
           <div className="text-xl font-bold text-white flex items-center gap-2.5">
             <span className="bg-[#5865F2] p-2 rounded-xl text-sm shadow-md shadow-[#5865f2]/20">
@@ -49,17 +49,17 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </div>
 
         {/* Nawigacja */}
-        <nav className="flex flex-col gap-1.5 flex-1 overflow-y-auto">
+        <nav className="flex flex-col gap-1.5 flex-1 overflow-y-auto pr-2 custom-scrollbar">
           {serverId ? (
             <>
               <SidebarNavItem href={`/dashboard/${serverId}`} label="📊 Przegląd panelu" active={pathname === `/dashboard/${serverId}` || pathname === `/dashboard/${serverId}/`} onClick={onClose} />
               
-              {/* TUTAJ DODALIŚMY NOWY LINK DO KREATORA PANELI: */}
+              {/* NOWE MODUŁY: */}
               <SidebarNavItem href={`/dashboard/${serverId}/panels`} label="📝 Kreator Paneli" active={pathname.includes('/panels')} onClick={onClose} />
               <SidebarNavItem href={`/dashboard/${serverId}/staff`} label="👥 Zespoły i Blacklist" active={pathname.includes('/staff')} onClick={onClose} />
+              <SidebarNavItem href={`/dashboard/${serverId}/tickets`} label="🎫 Zgłoszenia i Logi" active={pathname.includes('/tickets')} onClick={onClose} />
               
               <SidebarNavItem href={`/dashboard/${serverId}/settings`} label="⚙️ Ustawienia bota" active={pathname.includes('/settings')} onClick={onClose} />
-              <SidebarNavItem href={`/dashboard/${serverId}/tickets`} label="🎫 Aktywne Tickety" active={pathname.includes('/tickets')} onClick={onClose} />
             </>
           ) : (
             <>
@@ -70,8 +70,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           )}
         </nav>
 
-        {/* Dolna sekcja z czystymi linkami */}
-        <div className="pt-6 border-t border-[#1e222b]">
+        {/* Dolna sekcja powrotów */}
+        <div className="pt-6 border-t border-[#1e222b] mt-auto shrink-0">
           {serverId ? (
             <Link href="/dashboard" onClick={onClose} className="text-sm font-medium text-red-400 hover:text-red-300 transition flex items-center gap-2">
               ← Zmień serwer
