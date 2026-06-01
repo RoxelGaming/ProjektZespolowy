@@ -1,101 +1,180 @@
-"use client"
+'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import { useParams } from 'next/navigation';
 import { useToast } from '../../../contexts/ToastContext';
+import { useSettings } from '../../../contexts/SettingsContext';
+
+const translations = {
+  pl: {
+    title: 'Narzędzia Importu / Eksportu',
+    subtitle: 'Zarządzaj kopiami zapasowymi serwera oraz przenoś konfigurację bota.',
+    exportTitle: 'Pobieranie danych (Eksport)',
+    exportDB: 'Baza Danych (Tickety i Logi)',
+    exportDBDesc: 'Pobierz pełny zrzut bazy danych serwera. Plik zawiera wszystkie zgłoszenia, transkrypty i statystyki administracyjne.',
+    exportDBBtn: 'Pobierz zrzut bazy',
+    exportSettings: 'Konfiguracja Bota',
+    exportSettingsDesc: 'Wygeneruj lekki plik .json zawierający tylko ustawienia paneli, formularze i role. Idealne do klonowania serwerów.',
+    exportSettingsBtn: 'Pobierz plik JSON',
+    importTitle: 'Wgrywanie danych (Import)',
+    importSettings: 'Import Ustawień Bota',
+    importSettingsDesc: 'Wgraj plik konfiguracyjny .json.',
+    importSettingsWarn: 'Uwaga: Obecne ustawienia paneli i ról zostaną nadpisane.',
+    importDB: 'Przywracanie Bazy Danych',
+    importDBDesc: 'Wgraj plik zrzutu bazy (.sql, .db, .json).',
+    importDBWarn: 'Krytyczne: Obecne tickety i historia zostaną całkowicie zniszczone i zastąpione zrzutem!',
+    dragFile: 'Przeciągnij plik tutaj',
+    browseDisk: 'Przeglądaj dysk',
+    uploadBtn: 'Zatwierdź',
+    loading: 'Przetwarzanie...',
+  },
+  en: {
+    title: 'Import / Export Tools',
+    subtitle: 'Manage server backups and transfer bot configurations.',
+    exportTitle: 'Download Data (Export)',
+    exportDB: 'Database (Tickets & Logs)',
+    exportDBDesc: 'Download a full database dump. Includes all tickets, transcripts, and stats.',
+    exportDBBtn: 'Download DB dump',
+    exportSettings: 'Bot Configuration',
+    exportSettingsDesc: 'Generate a lightweight .json file with panel settings, forms, and roles.',
+    exportSettingsBtn: 'Download JSON',
+    importTitle: 'Upload Data (Import)',
+    importSettings: 'Import Bot Settings',
+    importSettingsDesc: 'Upload a .json config file.',
+    importSettingsWarn: 'Warning: Current panel settings and roles will be overwritten.',
+    importDB: 'Restore Database',
+    importDBDesc: 'Upload a dump file (.sql, .db, .json).',
+    importDBWarn: 'Critical: Current tickets and history will be completely destroyed and replaced!',
+    dragFile: 'Drag file here',
+    browseDisk: 'Browse disk',
+    uploadBtn: 'Confirm',
+    loading: 'Processing...',
+  }
+};
 
 export default function ImportExportPage() {
   const { addToast } = useToast();
+  const params = useParams();
+  const serverId = params?.serverId as string;
+  const { language } = useSettings();
+  const t = translations[language];
   
-  const [isExporting, setIsExporting] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
-  const [importJson, setImportJson] = useState('');
+  const [isExportingDB, setIsExportingDB] = useState(false);
+  const [isExportingSettings, setIsExportingSettings] = useState(false);
+  const [isImportingSettings, setIsImportingSettings] = useState(false);
+  const [selectedSettingsFile, setSelectedSettingsFile] = useState<File | null>(null);
+  const [isDraggingSettings, setIsDraggingSettings] = useState(false);
+  const settingsFileInputRef = useRef<HTMLInputElement>(null);
+  const [isImportingDB, setIsImportingDB] = useState(false);
+  const [selectedDBFile, setSelectedDBFile] = useState<File | null>(null);
+  const [isDraggingDB, setIsDraggingDB] = useState(false);
+  const dbFileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleExport = async () => {
-    if (isExporting) return;
-    setIsExporting(true);
-    // Symulacja generowania pliku
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    addToast('Configuration exported successfully!', 'success');
-    setIsExporting(false);
+  const handleExportDB = async () => {
+    setIsExportingDB(true);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    addToast('Pobrano pomyślnie.', 'success');
+    setIsExportingDB(false);
   };
 
-  const handleImport = async () => {
-    if (!importJson.trim()) {
-      addToast('Wklej kod JSON w pole tekstowe!', 'error');
-      return;
-    }
-    if (isImporting) return;
-    setIsImporting(true);
-    // Symulacja ładowania do bazy danych
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    addToast('Settings imported successfully!', 'success');
-    setIsImporting(false);
-    setImportJson('');
+  const handleExportSettings = async () => {
+    setIsExportingSettings(true);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    addToast('Eksport JSON zakończony.', 'success');
+    setIsExportingSettings(false);
+  };
+
+  const handleDropSettings = (e: React.DragEvent) => {
+    e.preventDefault(); setIsDraggingSettings(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0].name.endsWith('.json')) setSelectedSettingsFile(e.dataTransfer.files[0]);
+  };
+
+  const handleImportSettings = async () => {
+    if (!selectedSettingsFile) return;
+    setIsImportingSettings(true);
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    addToast('Zaktualizowano.', 'success');
+    setSelectedSettingsFile(null); setIsImportingSettings(false);
+  };
+
+  const handleDropDB = (e: React.DragEvent) => {
+    e.preventDefault(); setIsDraggingDB(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) setSelectedDBFile(e.dataTransfer.files[0]);
+  };
+
+  const handleImportDB = async () => {
+    if (!selectedDBFile) return;
+    setIsImportingDB(true);
+    await new Promise(resolve => setTimeout(resolve, 3500));
+    addToast('Baza danych przywrócona.', 'success');
+    setSelectedDBFile(null); setIsImportingDB(false);
   };
 
   return (
-    <div className="w-full space-y-8 animate-fadeIn text-white">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Kopie Zapasowe i Migracja</h1>
-        <p className="text-[#9ca3af] mt-1">Eksportuj konfigurację swojego bota do pliku lub przywróć ją z gotowego kodu JSON.</p>
+    <div className="max-w-6xl space-y-10 animate-fadeIn">
+      <div className="border-b border-border-subtle pb-5">
+        <h1 className="text-2xl font-bold text-text-main tracking-tight">{t.title}</h1>
+        <p className="text-text-muted text-sm mt-1">{t.subtitle} (ID: {serverId})</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        
-        {/* KARTA EXPORTU */}
-        <section className="bg-[#161920] border border-[#1e222b] rounded-2xl p-8 flex flex-col justify-between shadow-sm">
-          <div>
-            <div className="w-12 h-12 bg-[#5865F2]/10 rounded-xl flex items-center justify-center text-[#5865F2] mb-6">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
+      <div>
+        <h2 className="text-lg font-bold text-text-main mb-4 flex items-center gap-2"><span className="text-brand-base">📤</span> {t.exportTitle}</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <section className="bg-surface-panel border border-border-subtle p-6 rounded-2xl flex flex-col justify-between">
+            <div>
+              <div className="w-12 h-12 bg-surface-base rounded-xl flex items-center justify-center text-xl mb-4 border border-border-subtle">🗄️</div>
+              <h3 className="text-md font-semibold text-text-main">{t.exportDB}</h3>
+              <p className="text-sm text-text-muted mt-2 mb-6">{t.exportDBDesc}</p>
             </div>
-            <h2 className="text-xl font-bold mb-2">Export Settings</h2>
-            <p className="text-sm text-[#9ca3af] mb-8 leading-relaxed">
-              Wygeneruj pełną kopię zapasową swoich ustawień, paneli, etykiet i filtrów. Zapisz plik na dysku, aby móc szybko odtworzyć serwer w przyszłości.
-            </p>
-          </div>
+            <button onClick={handleExportDB} disabled={isExportingDB} className="w-full bg-surface-base hover:bg-border-subtle text-text-main font-bold py-3 px-4 rounded-xl text-sm transition border border-border-subtle disabled:opacity-50">
+              {isExportingDB ? t.loading : `💾 ${t.exportDBBtn}`}
+            </button>
+          </section>
+
+          <section className="bg-surface-panel border border-border-subtle p-6 rounded-2xl flex flex-col justify-between">
+            <div>
+              <div className="w-12 h-12 bg-surface-base rounded-xl flex items-center justify-center text-xl mb-4 border border-border-subtle">⚙️</div>
+              <h3 className="text-md font-semibold text-text-main">{t.exportSettings}</h3>
+              <p className="text-sm text-text-muted mt-2 mb-6">{t.exportSettingsDesc}</p>
+            </div>
+            <button onClick={handleExportSettings} disabled={isExportingSettings} className="w-full bg-surface-base hover:bg-border-subtle text-text-main font-bold py-3 px-4 rounded-xl text-sm transition border border-border-subtle disabled:opacity-50">
+              {isExportingSettings ? t.loading : `📄 ${t.exportSettingsBtn}`}
+            </button>
+          </section>
+        </div>
+      </div>
+
+      <div>
+        <h2 className="text-lg font-bold text-text-main mb-4 flex items-center gap-2"><span className="text-brand-base">📥</span> {t.importTitle}</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
-          <button 
-            onClick={handleExport} disabled={isExporting}
-            className="w-full bg-[#1e222b] hover:bg-[#2e3545] text-white font-bold py-3.5 px-4 rounded-xl transition-all border border-[#2e3545] flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {isExporting ? (
-              <span className="flex items-center gap-2">
-                <svg className="animate-spin h-5 w-5 text-[#5865F2]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                Generowanie pliku...
-              </span>
-            ) : 'Pobierz Konfigurację (Download)'}
-          </button>
-        </section>
+          <section className="bg-surface-panel border border-border-subtle p-6 rounded-2xl flex flex-col">
+            <h3 className="text-md font-semibold text-text-main mb-1">{t.importSettings}</h3>
+            <p className="text-sm text-text-muted mb-4">{t.importSettingsDesc}</p>
+            <div className="p-3 bg-status-warning/10 border border-status-warning/20 rounded-xl text-xs text-text-muted mb-5">⚠️ <strong className="text-status-warning">{t.importSettingsWarn}</strong></div>
+            <div onDragOver={(e) => { e.preventDefault(); setIsDraggingSettings(true); }} onDragLeave={() => setIsDraggingSettings(false)} onDrop={handleDropSettings} className={`flex-1 border-2 border-dashed rounded-xl p-6 text-center transition-all flex flex-col justify-center items-center ${isDraggingSettings ? 'border-brand-base bg-brand-base/5' : 'border-border-subtle'}`}>
+              <div className="text-3xl mb-2">📄</div>
+              <h4 className="text-sm font-semibold text-text-main mb-1">{selectedSettingsFile ? selectedSettingsFile.name : t.dragFile}</h4>
+              <input type="file" accept=".json" className="hidden" ref={settingsFileInputRef} onChange={(e) => e.target.files && setSelectedSettingsFile(e.target.files[0])} />
+              <button onClick={() => settingsFileInputRef.current?.click()} className="mt-3 text-text-muted hover:text-text-main text-xs font-semibold px-3 py-1.5 rounded-lg border border-border-subtle bg-surface-base">{t.browseDisk}</button>
+            </div>
+            <button onClick={handleImportSettings} disabled={!selectedSettingsFile || isImportingSettings} className="mt-4 w-full bg-brand-base hover:bg-brand-hover text-white font-bold py-2.5 rounded-xl text-sm transition shadow-lg disabled:opacity-50">{isImportingSettings ? t.loading : t.uploadBtn}</button>
+          </section>
 
-        {/* KARTA IMPORTU */}
-        <section className="bg-[#161920] border border-[#1e222b] rounded-2xl p-8 flex flex-col shadow-sm">
-          <div className="w-12 h-12 bg-[#23A559]/10 rounded-xl flex items-center justify-center text-[#23A559] mb-6">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-            </svg>
-          </div>
-          <h2 className="text-xl font-bold mb-2">Import Settings</h2>
-          <p className="text-sm text-[#9ca3af] mb-6">
-            Wklej wygenerowany wcześniej kod JSON, aby błyskawicznie nadpisać obecną konfigurację. Uwaga: Ta akcja jest nieodwracalna.
-          </p>
+          <section className="bg-surface-panel border border-border-subtle p-6 rounded-2xl flex flex-col">
+            <h3 className="text-md font-semibold text-text-main mb-1">{t.importDB}</h3>
+            <p className="text-sm text-text-muted mb-4">{t.importDBDesc}</p>
+            <div className="p-3 bg-status-error/10 border border-status-error/20 rounded-xl text-xs text-text-muted mb-5">⚠️ <strong className="text-status-error">{t.importDBWarn}</strong></div>
+            <div onDragOver={(e) => { e.preventDefault(); setIsDraggingDB(true); }} onDragLeave={() => setIsDraggingDB(false)} onDrop={handleDropDB} className={`flex-1 border-2 border-dashed rounded-xl p-6 text-center transition-all flex flex-col justify-center items-center ${isDraggingDB ? 'border-status-error bg-status-error/5' : 'border-border-subtle'}`}>
+              <div className="text-3xl mb-2">🗄️</div>
+              <h4 className="text-sm font-semibold text-text-main mb-1">{selectedDBFile ? selectedDBFile.name : t.dragFile}</h4>
+              <input type="file" accept=".json,.sql,.db" className="hidden" ref={dbFileInputRef} onChange={(e) => e.target.files && setSelectedDBFile(e.target.files[0])} />
+              <button onClick={() => dbFileInputRef.current?.click()} className="mt-3 text-text-muted hover:text-text-main text-xs font-semibold px-3 py-1.5 rounded-lg border border-border-subtle bg-surface-base">{t.browseDisk}</button>
+            </div>
+            <button onClick={handleImportDB} disabled={!selectedDBFile || isImportingDB} className="mt-4 w-full bg-status-error hover:bg-red-600 text-white font-bold py-2.5 rounded-xl text-sm transition shadow-lg disabled:opacity-50">{isImportingDB ? t.loading : t.uploadBtn}</button>
+          </section>
 
-          <textarea 
-            value={importJson}
-            onChange={(e) => setImportJson(e.target.value)}
-            placeholder='{"server_id": "123", "panels": [...]}' 
-            className="w-full flex-1 bg-[#101216] border border-[#2e3545] rounded-xl p-4 text-sm text-[#9ca3af] font-mono focus:outline-none focus:border-[#5865F2] resize-none min-h-[140px] mb-6"
-          />
-
-          <button 
-            onClick={handleImport} disabled={isImporting}
-            className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-lg shadow-[#5865f2]/20 flex items-center justify-center gap-2 disabled:opacity-50 mt-auto"
-          >
-            {isImporting ? 'Wgrywanie ustawień...' : 'Importuj (Overwrite Settings)'}
-          </button>
-        </section>
-
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,4 @@
 'use client';
-
 import Link from 'next/link';
 
 interface SidebarNavItemProps {
@@ -10,15 +9,14 @@ interface SidebarNavItemProps {
 }
 
 export default function SidebarNavItem({ href, label, active, onClick }: SidebarNavItemProps) {
-  // Wywaliliśmy stąd basePath!
   return (
     <Link 
       href={href} 
       onClick={onClick}
       className={`px-4 py-3 rounded-xl text-sm font-medium transition duration-200 block ${
         active 
-          ? 'bg-[#5865F2] text-white shadow-lg shadow-[#5865f2]/10 font-semibold' 
-          : 'text-[#9ca3af] hover:bg-[#1e222b] hover:text-white'
+          ? 'bg-brand-base text-white shadow-lg shadow-brand-base/20 font-semibold' 
+          : 'text-text-muted hover:bg-surface-base hover:text-text-main'
       }`}
     >
       {label}

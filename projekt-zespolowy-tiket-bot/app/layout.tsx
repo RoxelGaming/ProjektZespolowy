@@ -1,8 +1,8 @@
 import './globals.css';
 import { Inter } from 'next/font/google';
 import { ToastProvider } from './contexts/ToastContext';
+import { SettingsProvider } from './contexts/SettingsContext';
 
-// Ładujemy font (czcionkę) i przypisujemy go do zmiennej
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata = {
@@ -16,11 +16,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pl">
-      <body className={`${inter.className} bg-black/90 text-white/90`}>
-        <ToastProvider>
-          {children}
-        </ToastProvider>
+    <html suppressHydrationWarning>
+      <body className={`${inter.className} transition-colors duration-300 bg-surface-base text-text-main antialiased`}>
+        <SettingsProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </SettingsProvider>
       </body>
     </html>
   );
