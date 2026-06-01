@@ -53,14 +53,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           {serverId ? (
             <>
               <SidebarNavItem href={`/dashboard/${serverId}`} label="📊 Przegląd panelu" active={pathname === `/dashboard/${serverId}` || pathname === `/dashboard/${serverId}/`} onClick={onClose} />
-              
-              {/* NOWE MODUŁY: */}
-              <SidebarNavItem href={`/dashboard/${serverId}/panels`} label="📝 Kreator Paneli" active={pathname.includes('/panels')} onClick={onClose} />
-              <SidebarNavItem href={`/dashboard/${serverId}/staff`} label="👥 Zespoły i Blacklist" active={pathname.includes('/staff')} onClick={onClose} />
-              <SidebarNavItem href={`/dashboard/${serverId}/tickets`} label="🎫 Zgłoszenia i Logi" active={pathname.includes('/tickets')} onClick={onClose} />
-              
-              <SidebarNavItem href={`/dashboard/${serverId}/settings`} label="⚙️ Ustawienia bota" active={pathname.includes('/settings')} onClick={onClose} />
-            </>
+            
+            <SidebarNavItem href={`/dashboard/${serverId}/panels`} label="📝 Kreator Paneli" active={pathname.includes('/panels')} onClick={onClose} />
+            <SidebarNavItem href={`/dashboard/${serverId}/staff`} label="👥 Zespoły i Blacklist" active={pathname.includes('/staff')} onClick={onClose} />
+            <SidebarNavItem href={`/dashboard/${serverId}/tickets`} label="🎫 Zgłoszenia i Logi" active={pathname.includes('/tickets')} onClick={onClose} />
+            
+            <SidebarNavItem href={`/dashboard/${serverId}/settings`} label="⚙️ Ustawienia bota" active={pathname.includes('/settings')} onClick={onClose} />
+            
+            {/* Nowe podstrony "W Budowie" oraz Import/Export */}
+            <SidebarNavItem href={`/dashboard/${serverId}/integrations`} label="🔗 Integracje" active={pathname.includes('/integrations')} onClick={onClose} />
+            <SidebarNavItem href={`/dashboard/${serverId}/tags`} label="🏷️ Tagi" active={pathname.includes('/tags')} onClick={onClose} />
+            <SidebarNavItem href={`/dashboard/${serverId}/audit-logs`} label="📜 Audit Logs" active={pathname.includes('/audit-logs')} onClick={onClose} />
+            <SidebarNavItem href={`/dashboard/${serverId}/import-export`} label="💾 Import / Export" active={pathname.includes('/import-export')} onClick={onClose} /></>
           ) : (
             <>
               <SidebarNavItem href="/dashboard" label="🛡️ Wybór Serwerów" active={pathname === '/dashboard' || pathname === '/dashboard/'} onClick={onClose} />
