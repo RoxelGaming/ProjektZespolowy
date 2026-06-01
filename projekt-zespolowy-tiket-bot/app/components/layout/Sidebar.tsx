@@ -14,11 +14,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const params = useParams();
   const serverId = params?.serverId as string;
 
-  // Usunęliśmy stąd ręczne getPath() - Next.js zajmie się tym sam!
-
   return (
     <>
-      {/* Ciemne tło rozmywające (Backdrop) - widoczne tylko na mobile gdy menu jest otwarte */}
+      {/* Ciemne tło rozmywające (Backdrop) dla mobile */}
       {isOpen && (
         <div 
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden transition-opacity"
@@ -34,7 +32,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         md:static md:translate-x-0
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        {/* Nagłówek Sidebaru (z przyciskiem zamykania X na mobile) */}
+        {/* Nagłówek Sidebaru */}
         <div className="flex items-center justify-between">
           <div className="text-xl font-bold text-white flex items-center gap-2.5">
             <span className="bg-[#5865F2] p-2 rounded-xl text-sm shadow-md shadow-[#5865f2]/20">
@@ -55,6 +53,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           {serverId ? (
             <>
               <SidebarNavItem href={`/dashboard/${serverId}`} label="📊 Przegląd panelu" active={pathname === `/dashboard/${serverId}` || pathname === `/dashboard/${serverId}/`} onClick={onClose} />
+              
+              {/* TUTAJ DODALIŚMY NOWY LINK DO KREATORA PANELI: */}
+              <SidebarNavItem href={`/dashboard/${serverId}/panels`} label="📝 Kreator Paneli" active={pathname.includes('/panels')} onClick={onClose} />
+              
               <SidebarNavItem href={`/dashboard/${serverId}/settings`} label="⚙️ Ustawienia bota" active={pathname.includes('/settings')} onClick={onClose} />
               <SidebarNavItem href={`/dashboard/${serverId}/tickets`} label="🎫 Aktywne Tickety" active={pathname.includes('/tickets')} onClick={onClose} />
             </>
