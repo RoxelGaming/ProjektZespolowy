@@ -311,7 +311,7 @@ export default function TicketsPanelPage() {
             : 'bg-[#5865F2] hover:bg-[#4752C4] text-white shadow-lg shadow-[#5865f2]/20'
           }`}
         >
-          {isSaving ? 'Zapisywanie widoku...' : 'Zapisz zmiany (Save Changes)'}
+          {isSaving ? 'Zapisywanie widoku...' : 'Zapisz zmiany'}
         </button>
       </div>
 

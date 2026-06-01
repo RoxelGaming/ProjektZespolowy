@@ -161,7 +161,7 @@ export default function TicketsListPage() {
                   )}
                   <td className="p-4 text-right">
                     <Link href={`/dashboard/${serverId}/tickets/${ticket.id}`} className="inline-block bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-2 px-4 rounded-xl text-sm transition shadow-lg shadow-[#5865f2]/20">
-                      Podgląd (View)
+                      Podgląd
                     </Link>
                   </td>
                 </tr>

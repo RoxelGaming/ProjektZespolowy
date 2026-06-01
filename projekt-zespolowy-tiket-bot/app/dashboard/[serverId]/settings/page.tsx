@@ -46,7 +46,7 @@ export default function SettingsPage() {
     <div className="w-full space-y-10 pb-24 relative text-white animate-fadeIn">
       
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Ustawienia bota</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Formularze bota</h1>
         <p className="text-[#9ca3af] mt-1">Zarządzaj konfiguracją i formularzami wejściowymi dla swoich ticketów.</p>
       </div>
 
@@ -55,7 +55,7 @@ export default function SettingsPage() {
         
         {/* LEWA STRONA */}
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold border-b border-[#1e222b] pb-2">Ustawienia ogólne</h2>
+          <h2 className="text-xl font-semibold border-b border-[#1e222b] pb-2">Formularze ogólne</h2>
           
           <details open className="group bg-[#161920] border border-[#1e222b] rounded-xl overflow-hidden cursor-pointer shadow-sm">
             <summary className="p-4 font-medium hover:bg-[#1e222b] transition-colors list-none flex justify-between items-center select-none">
