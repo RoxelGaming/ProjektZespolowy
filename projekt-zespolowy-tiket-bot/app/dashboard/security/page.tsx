@@ -2,9 +2,39 @@
 
 import { useState } from 'react';
 import { useToast } from '../../contexts/ToastContext';
+import { useSettings } from '../../contexts/SettingsContext';
+
+const translations = {
+  pl: {
+    title: 'Bezpieczeństwo konta',
+    subtitle: 'Zarządzaj metodami awaryjnego odzyskiwania dostępu do swojego profilu.',
+    recovery: 'Kody odzyskiwania',
+    recoveryDesc: 'Te kody pozwolą Ci bezpiecznie odzyskać dostęp.',
+    copy: '📋 Skopiuj kody',
+    gen: '⚡ Wygeneruj nowe',
+    generating: '🔄 Generowanie...',
+    emailTitle: 'Zapasowy adres E-mail',
+    emailDesc: 'Adres wykorzystywany do przesyłania powiadomień bezpieczeństwa.',
+    saveEmail: 'Zapisz e-mail'
+  },
+  en: {
+    title: 'Account Security',
+    subtitle: 'Manage methods for emergency recovery of your profile access.',
+    recovery: 'Recovery codes',
+    recoveryDesc: 'These codes will allow you to safely regain access.',
+    copy: '📋 Copy codes',
+    gen: '⚡ Generate new',
+    generating: '🔄 Generating...',
+    emailTitle: 'Backup E-mail address',
+    emailDesc: 'Address used to send security notifications.',
+    saveEmail: 'Save e-mail'
+  }
+};
 
 export default function SecurityPage() {
   const { addToast } = useToast();
+  const { language } = useSettings();
+  const t = translations[language];
   
   const [email, setEmail] = useState('student@ujd.edu.pl');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -12,83 +42,38 @@ export default function SecurityPage() {
 
   const handleGenerateNewCodes = () => {
     setIsGenerating(true);
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    const generate = () => Array(2).fill(0).map(() => Array(4).fill(0).map(() => characters.charAt(Math.floor(Math.random() * characters.length))).join('')).join('-');
-    
-    setTimeout(() => {
-      setRecoveryCodes([generate(), generate(), generate(), generate()]);
-      setIsGenerating(false);
-      addToast('Uwaga: Poprzednie kody awaryjne utraciły ważność!', 'warning');
-    }, 800);
+    const generate = () => Array(2).fill(0).map(() => Array(4).fill(0).map(() => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.charAt(Math.floor(Math.random() * 36))).join('')).join('-');
+    setTimeout(() => { setRecoveryCodes([generate(), generate(), generate(), generate()]); setIsGenerating(false); }, 800);
   };
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(recoveryCodes.join(', '));
-    addToast('Skopiowano kody do schowka!', 'success');
-  };
-
-  const handleSaveEmail = () => {
-    if (!email.includes('@')) {
-      addToast('Nieprawidłowy format adresu E-mail!', 'error');
-      return;
-    }
-    addToast('Zapasowy adres E-mail został zapisany.', 'success');
-  }
 
   return (
     <div className="w-full space-y-8 animate-fadeIn">
-      
-      <div className="border-b border-[#1e222b] pb-5">
-        <h1 className="text-2xl font-bold text-white tracking-tight">Bezpieczeństwo konta</h1>
-        <p className="text-[#9ca3af] text-sm mt-1">Zarządzaj metodami awaryjnego odzyskiwania dostępu do swojego profilu.</p>
+      <div className="border-b border-border-subtle pb-5">
+        <h1 className="text-2xl font-bold text-text-main tracking-tight">{t.title}</h1>
+        <p className="text-text-muted text-sm mt-1">{t.subtitle}</p>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-        
-        <section className="bg-[#161920] border border-[#1e222b] p-6 rounded-2xl space-y-5">
-          <div>
-            <h2 className="text-lg font-semibold text-white">Kody odzyskiwania</h2>
-            <p className="text-sm text-[#9ca3af] mt-1">
-              Te kody pozwolą Ci bezpiecznie odzyskać dostęp, jeśli stracisz autoryzację przez konto Discord.
-            </p>
-          </div>
-          
+        <section className="bg-surface-panel border border-border-subtle p-6 rounded-2xl space-y-5">
+          <div><h2 className="text-lg font-semibold text-text-main">{t.recovery}</h2><p className="text-sm text-text-muted mt-1">{t.recoveryDesc}</p></div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {recoveryCodes.map((code, index) => (
-              <div key={index} className={`bg-[#101216] border border-[#2e3545] px-4 py-3.5 rounded-xl font-mono text-center text-[#5865F2] font-semibold text-base transition-all duration-300 ${isGenerating ? 'opacity-40 scale-95' : 'opacity-100 scale-100'}`}>
-                {code}
-              </div>
+              <div key={index} className={`bg-surface-base border border-border-subtle px-4 py-3.5 rounded-xl font-mono text-center text-brand-base font-semibold text-base transition-all ${isGenerating ? 'opacity-40 scale-95' : 'opacity-100'}`}>{code}</div>
             ))}
           </div>
-          
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <button onClick={copyToClipboard} disabled={isGenerating} className="bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-3 px-5 rounded-xl text-sm transition shadow-lg shadow-[#5865f2]/10 disabled:opacity-50 flex-1">
-              📋 Skopiuj kody
-            </button>
-            <button onClick={handleGenerateNewCodes} disabled={isGenerating} className="bg-[#1e222b] hover:bg-[#252a36] text-[#f2f3f5] font-semibold py-3 px-5 rounded-xl text-sm transition border border-[#2e3545] disabled:opacity-50 flex-1">
-              {isGenerating ? '🔄 Generowanie...' : '⚡ Wygeneruj nowe'}
-            </button>
+            <button onClick={() => navigator.clipboard.writeText(recoveryCodes.join(', '))} disabled={isGenerating} className="bg-brand-base hover:bg-brand-hover text-white font-bold py-3 px-5 rounded-xl text-sm transition shadow-lg flex-1">{t.copy}</button>
+            <button onClick={handleGenerateNewCodes} disabled={isGenerating} className="bg-surface-base hover:bg-border-subtle text-text-main font-semibold py-3 px-5 rounded-xl text-sm transition border border-border-subtle flex-1">{isGenerating ? t.generating : t.gen}</button>
           </div>
         </section>
 
-        <section className="bg-[#161920] border border-[#1e222b] p-6 rounded-2xl space-y-4 h-fit">
-          <div>
-            <h2 className="text-lg font-semibold text-white">Zapasowy adres E-mail</h2>
-            <p className="text-sm text-[#9ca3af] mt-1">Adres wykorzystywany do przesyłania powiadomień bezpieczeństwa.</p>
-          </div>
-          
+        <section className="bg-surface-panel border border-border-subtle p-6 rounded-2xl space-y-4 h-fit">
+          <div><h2 className="text-lg font-semibold text-text-main">{t.emailTitle}</h2><p className="text-sm text-text-muted mt-1">{t.emailDesc}</p></div>
           <div className="flex flex-col sm:flex-row gap-3">
-            <input 
-              type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              className="flex-1 bg-[#101216] border border-[#2e3545] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#5865F2] transition"
-              placeholder="Twój zapasowy e-mail..."
-            />
-            <button onClick={handleSaveEmail} className="bg-[#1e222b] hover:bg-[#252a36] text-white font-bold py-3 px-6 rounded-xl text-sm transition border border-[#2e3545] shrink-0">
-              Zapisz e-mail
-            </button>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="flex-1 bg-surface-base border border-border-subtle rounded-xl px-4 py-3 text-sm text-text-main focus:outline-none focus:border-brand-base transition" />
+            <button onClick={() => addToast('Zapisano', 'success')} className="bg-surface-base hover:bg-border-subtle text-text-main font-bold py-3 px-6 rounded-xl text-sm transition border border-border-subtle shrink-0">{t.saveEmail}</button>
           </div>
         </section>
-
       </div>
     </div>
   );
