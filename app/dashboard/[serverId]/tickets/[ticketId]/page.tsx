@@ -1,331 +1,165 @@
-'use client';
+"use client"
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useState } from 'react';
 import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
 import { useToast } from '../../../../contexts/ToastContext';
 
-// ==========================================
-// MOCK DATA (Rozbudowana makieta symulująca bazę danych)
-// ==========================================
-const MOCK_DB: Record<string, any> = {
-  // Aktywne zgłoszenia
-  '1024': { subject: 'Problem z płatnością VIP', author: 'Roxel', status: 'W trakcie', claimer: 'ArturZaton', avatar: 'https://cdn.discordapp.com/embed/avatars/0.png' },
-  '1025': { subject: 'Zgłoszenie gracza za cheaty', author: 'GamerX', status: 'Oczekuje', claimer: null, avatar: 'https://cdn.discordapp.com/embed/avatars/1.png' },
-  '1026': { subject: 'Pytanie o rekrutację', author: 'N00bSlayer', status: 'Oczekuje na gracza', claimer: 'Roxel', avatar: 'https://cdn.discordapp.com/embed/avatars/2.png' },
-  // Zamknięte transkrypty (Archiwum)
-  '0998': { subject: 'Odzyskanie hasła', author: 'Zguba', status: 'Zamknięte', claimer: 'ArturZaton', avatar: 'https://cdn.discordapp.com/embed/avatars/3.png' },
-  '0999': { subject: 'Prośba o unmute', author: 'Spammer', status: 'Zamknięte', claimer: 'System', avatar: 'https://cdn.discordapp.com/embed/avatars/4.png' },
-};
+// Mock wiadomości z czatu
+const MOCK_MESSAGES = [
+  { id: 1, author: 'TicketBot', isBot: true, avatar: '🤖', time: 'Dzisiaj o 14:30', content: 'Witaj w zgłoszeniu! Opisz swój problem, a administracja odpowie wkrótce.' },
+  { id: 2, author: 'Kowal#1234', isBot: false, avatar: '👨‍🔧', time: 'Dzisiaj o 14:32', content: 'Hej, mam problem z odebraniem nagrody za wczorajszy event. Wyrzuca mi błąd bazy danych.' },
+  { id: 3, author: 'Admin', isBot: false, avatar: '🛡️', time: 'Dzisiaj o 14:45', content: 'Cześć! Podaj proszę swój dokładny ID z gry, sprawdzę to w logach.' },
+];
 
-export default function TicketViewPage() {
+export default function TicketDetailedViewPage() {
   const params = useParams();
-  const { addToast } = useToast();
-  
+  const router = useRouter();
   const serverId = params?.serverId as string;
   const ticketId = params?.ticketId as string;
+  const { addToast } = useToast();
 
-  // Pobieranie danych konkretnego ticketa na podstawie adresu URL
-  const ticketData = MOCK_DB[ticketId] || { 
-    subject: 'Nieznane zgłoszenie', 
-    author: 'Brak danych', 
-    status: 'Zamknięte', 
-    claimer: null, 
-    avatar: 'https://cdn.discordapp.com/embed/avatars/0.png' 
+  const [labels, setLabels] = useState<string[]>(['High Priority']);
+  const [newLabelInput, setNewLabelInput] = useState('');
+  const [isClosing, setIsClosing] = useState(false);
+  const [chatMessage, setChatMessage] = useState('');
+
+  const handleAddLabel = () => {
+    if (!newLabelInput.trim()) return;
+    if (!labels.includes(newLabelInput.trim())) {
+      setLabels([...labels, newLabelInput.trim()]);
+      addToast(`Dodano etykietę: ${newLabelInput}`, 'info');
+    }
+    setNewLabelInput('');
   };
 
-  // Stany komponentu
-  const [ticketStatus, setTicketStatus] = useState(ticketData.status);
-  const [claimer, setClaimer] = useState<string | null>(ticketData.claimer);
-  const [closeReason, setCloseReason] = useState('');
-  const [isClosing, setIsClosing] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false); // Stan dla pobierania PDF
-  const [chatInput, setChatInput] = useState('');
-  const [newNote, setNewNote] = useState('');
-  
-  const [internalNotes, setInternalNotes] = useState<{id: number, text: string, author: string}[]>([
-    { id: 1, text: 'Użytkownik miał już podobne problemy w przeszłości.', author: 'System' }
-  ]);
-
-  // Synchronizacja stanu, jeśli użytkownik kliknie inny ticket bez przeładowania strony
-  useEffect(() => {
-    setTicketStatus(ticketData.status);
-    setClaimer(ticketData.claimer);
-  }, [ticketId, ticketData.status, ticketData.claimer]);
-
-  // Generowanie dynamicznych wiadomości dla widoku
-  const mockMessages = [
-    {
-      id: 1,
-      type: 'system',
-      author: 'TicketBot',
-      authorAvatar: '🤖',
-      timestamp: 'Dziś o 14:30',
-      content: `Witaj w zgłoszeniu! Opisz dokładnie swój problem, a administracja odpowie najszybciej jak to możliwe.`,
-      isEmbed: true,
-    },
-    {
-      id: 2,
-      type: 'user',
-      author: ticketData.author,
-      authorAvatar: ticketData.avatar,
-      timestamp: 'Dziś o 14:31',
-      content: ticketData.status === 'Zamknięte' ? 'Dziękuję za rozwiązanie mojego problemu. Można zamknąć.' : 'Hej, potrzebuję pomocy z moim zgłoszeniem.',
-      isEmbed: false,
-    }
-  ];
-
-  // ==========================================
-  // FUNKCJE AKCJI
-  // ==========================================
-  const handleClaim = () => {
-    setClaimer('Ty (Admin)');
-    setTicketStatus('W trakcie');
-    addToast('Zgłoszenie zostało przypisane do Ciebie.', 'success');
+  const handleRemoveLabel = (label: string) => {
+    setLabels(labels.filter(l => l !== label));
+    addToast(`Usunięto etykietę: ${label}`, 'success');
   };
 
   const handleCloseTicket = async () => {
-    if (!closeReason) {
-      addToast('Musisz podać powód zamknięcia zgłoszenia!', 'error');
-      return;
-    }
+    if (isClosing) return;
     setIsClosing(true);
+    // Symulacja API
     await new Promise(resolve => setTimeout(resolve, 1500));
-    setTicketStatus('Zamknięte');
-    addToast('Zgłoszenie zostało pomyślnie zamknięte. Zapisywanie transkryptu...', 'success');
-    setIsClosing(false);
-  };
-
-  const handleAddNote = () => {
-    if (!newNote.trim()) return;
-    setInternalNotes([...internalNotes, { id: Date.now(), text: newNote, author: 'Ty (Admin)' }]);
-    setNewNote('');
-    addToast('Notatka wewnętrzna dodana pomyślnie.', 'success');
-  };
-
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatInput.trim()) return;
-    addToast('Wiadomość wysłana do użytkownika na Discordzie.', 'success');
-    setChatInput('');
-  };
-
-  const handleDownloadPDF = async () => {
-    setIsDownloading(true);
-    addToast('Generowanie pliku PDF. Proszę czekać...', 'info');
-    // Symulacja renderowania PDF z logów czatu
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    addToast(`Transkrypt zgłoszenia #${ticketId} pobrano pomyślnie!`, 'success');
-    setIsDownloading(false);
+    addToast('Ticket został pomyślnie zamknięty!', 'success');
+    router.push(`/dashboard/${serverId}/tickets`); // Powrót do listy po zamknięciu
   };
 
   return (
-    <div className="max-w-7xl h-[calc(100vh-8rem)] flex flex-col animate-fadeIn">
+    <div className="w-full h-[calc(100vh-8rem)] flex flex-col md:flex-row gap-6 animate-fadeIn text-white">
       
-      {/* Przycisk powrotu i Nagłówek */}
-      <div className="mb-4 shrink-0 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link 
-            href={`/dashboard/${serverId}/tickets`}
-            className="text-[#9ca3af] hover:text-white bg-[#101216] border border-[#1e222b] hover:border-[#2e3545] p-2 rounded-lg transition"
-          >
-            ← Powrót
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-              <span className="text-[#9ca3af]">🎫</span> {ticketData.subject}
-            </h1>
-            <p className="text-[#9ca3af] text-sm">Zgłoszenie #{ticketId} • Utworzone przez {ticketData.author}</p>
-          </div>
-        </div>
+      {/* LEWA STRONA: SYMULTOR CZATU DISCORDA */}
+      <div className="flex-1 bg-[#161920] border border-[#1e222b] rounded-2xl flex flex-col overflow-hidden shadow-sm">
         
-        {/* Znacznik statusu */}
-        <div className={`px-3 py-1.5 rounded-lg text-sm font-bold border ${
-          ticketStatus === 'Zamknięte' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-          ticketStatus === 'W trakcie' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-          'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
-        }`}>
-          Status: {ticketStatus}
+        {/* Chat Header */}
+        <div className="px-6 py-4 border-b border-[#1e222b] bg-[#101216] flex items-center gap-3 shrink-0">
+          <Link href={`/dashboard/${serverId}/tickets`} className="text-[#9ca3af] hover:text-white transition mr-2">
+            ← Wróć
+          </Link>
+          <span className="text-[#9ca3af] font-bold text-xl">#</span>
+          <h2 className="font-bold text-lg">{ticketId}</h2>
+        </div>
+
+        {/* Chat Messages */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {MOCK_MESSAGES.map(msg => (
+            <div key={msg.id} className="flex gap-4 group hover:bg-[#101216] -mx-4 px-4 py-2 rounded-xl transition-colors">
+              <div className="w-10 h-10 rounded-full bg-[#1e222b] flex items-center justify-center shrink-0 border border-[#2e3545] text-xl">
+                {msg.avatar}
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-baseline gap-2">
+                  <span className={`font-semibold ${msg.isBot ? 'text-[#5865F2]' : 'text-white'}`}>{msg.author}</span>
+                  {msg.isBot && <span className="bg-[#5865F2] text-white text-[10px] uppercase font-bold px-1.5 py-0.5 rounded">BOT</span>}
+                  <span className="text-xs text-[#6b7280] font-medium">{msg.time}</span>
+                </div>
+                <p className="text-[#d1d5db] leading-relaxed mt-1 text-[15px]">{msg.content}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Chat Input */}
+        <div className="p-4 bg-[#101216] border-t border-[#1e222b] shrink-0">
+          <div className="bg-[#1e222b] rounded-xl flex items-center px-4">
+            <input 
+              type="text" 
+              placeholder={`Napisz na kanale #${ticketId}...`} 
+              value={chatMessage} onChange={(e) => setChatMessage(e.target.value)}
+              className="w-full bg-transparent border-none py-3.5 text-sm text-[#f2f3f5] focus:outline-none placeholder-[#6b7280]"
+            />
+            <button className="p-2 text-[#9ca3af] hover:text-white transition">
+              <svg className="w-5 h-5 transform rotate-90" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6 h-full overflow-hidden">
+      {/* PRAWA STRONA: PANEL AKCJI / SIDEBAR */}
+      <div className="w-full md:w-80 flex flex-col gap-6 shrink-0">
         
-        {/* ========================================== */}
-        {/* LEWA KOLUMNA: KLON CZATU DISCORDA          */}
-        {/* ========================================== */}
-        <div className="flex-1 flex flex-col bg-[#313338] border border-[#1e222b] rounded-2xl overflow-hidden shadow-lg">
+        {/* Ticket Info Card */}
+        <div className="bg-[#161920] border border-[#1e222b] rounded-2xl p-6 shadow-sm space-y-4">
+          <h3 className="font-bold text-lg border-b border-[#1e222b] pb-2 text-white">Informacje</h3>
           
-          {/* Header Czatu */}
-          <div className="bg-[#2b2d31] border-b border-[#1e222b] p-4 shadow-sm flex items-center gap-2 shrink-0">
-            <span className="text-[#80848e] text-xl font-bold">#</span>
-            <span className="text-white font-semibold">ticket-{ticketData.author.toLowerCase()}</span>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-[#9ca3af] font-bold uppercase tracking-wider">Otwierający</span>
+            <div className="flex items-center gap-2 mt-1">
+              <div className="w-6 h-6 rounded-full bg-[#101216] flex items-center justify-center text-xs">👨‍🔧</div>
+              <span className="font-semibold text-sm">Kowal#1234</span>
+            </div>
           </div>
 
-          {/* Obszar Wiadomości */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar bg-[#313338]">
-            
-            {/* Wiadomość powitalna (Początek kanału) */}
-            <div className="mt-8 mb-10">
-              <div className="w-16 h-16 bg-[#5865F2] rounded-full flex items-center justify-center text-3xl mb-4">🎫</div>
-              <h2 className="text-3xl font-bold text-white mb-2">Witaj na kanale zgłoszenia!</h2>
-              <p className="text-[#9ca3af]">To jest początek historii zgłoszenia <strong className="text-white">{ticketData.subject}</strong>.</p>
-            </div>
+          <div className="flex flex-col gap-1 pt-2">
+            <span className="text-xs text-[#9ca3af] font-bold uppercase tracking-wider">Kategoria Zapisu</span>
+            <span className="text-sm font-medium">📂 Wsparcie Techniczne</span>
+          </div>
+        </div>
 
-            {/* Renderowanie wiadomości */}
-            {mockMessages.map((msg) => (
-              <div key={msg.id} className="flex gap-4 group hover:bg-[#2e3035] p-2 -mx-2 rounded-lg transition-colors">
-                <div className="w-10 h-10 rounded-full shrink-0 overflow-hidden bg-[#1e222b] flex items-center justify-center text-xl">
-                  {msg.type === 'system' ? msg.authorAvatar : <img src={msg.authorAvatar} alt="avatar" className="w-full h-full object-cover" />}
-                </div>
-                <div className="flex flex-col">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-white font-medium hover:underline cursor-pointer">{msg.author}</span>
-                    {msg.type === 'system' && <span className="bg-[#5865F2] text-white text-[10px] px-1.5 rounded font-bold uppercase tracking-wide">BOT</span>}
-                    <span className="text-xs text-[#949ba4]">{msg.timestamp}</span>
-                  </div>
-                  
-                  {msg.isEmbed ? (
-                    <div className="mt-2 bg-[#2b2d31] border-l-4 border-[#5865F2] rounded-r-lg p-4 max-w-xl shadow-md">
-                      <div className="text-white text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</div>
-                    </div>
-                  ) : (
-                    <div className="text-[#dbdee1] mt-1 text-sm leading-relaxed">{msg.content}</div>
-                  )}
-                </div>
+        {/* Labels Manager */}
+        <div className="bg-[#161920] border border-[#1e222b] rounded-2xl p-6 shadow-sm flex-1">
+          <h3 className="font-bold text-lg border-b border-[#1e222b] pb-2 text-white mb-4">Etykiety (Labels)</h3>
+          
+          <div className="flex flex-wrap gap-2 mb-4">
+            {labels.length === 0 && <span className="text-sm text-[#6b7280]">Brak przypisanych etykiet.</span>}
+            {labels.map(label => (
+              <div key={label} className="flex items-center gap-1.5 bg-[#1e222b] text-[#d1d5db] border border-[#2e3545] rounded-lg px-2.5 py-1 text-xs font-semibold group transition-colors hover:border-[#DA373C]/50">
+                {label}
+                <button onClick={() => handleRemoveLabel(label)} className="text-[#6b7280] hover:text-[#DA373C] ml-1 focus:outline-none">
+                  ✕
+                </button>
               </div>
             ))}
           </div>
 
-          {/* Pole wprowadzania wiadomości */}
-          <div className="p-4 bg-[#313338] shrink-0">
-            <form onSubmit={handleSendMessage} className="relative">
-              <input 
-                type="text" 
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                disabled={ticketStatus === 'Zamknięte'}
-                placeholder={ticketStatus === 'Zamknięte' ? 'Zgłoszenie jest zamknięte (Archiwum).' : `Napisz wiadomość do ${ticketData.author}...`}
-                className="w-full bg-[#383a40] text-[#dbdee1] rounded-lg pl-4 pr-12 py-3 focus:outline-none focus:ring-0 placeholder-[#80848e] disabled:opacity-50 disabled:cursor-not-allowed"
-              />
-              <button 
-                type="submit"
-                disabled={!chatInput.trim() || ticketStatus === 'Zamknięte'}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-[#9ca3af] hover:text-white disabled:opacity-50 disabled:hover:text-[#9ca3af] transition-colors"
-              >
-                ✉️
-              </button>
-            </form>
+          <div className="flex gap-2">
+            <input 
+              type="text" placeholder="Nowa etykieta..." 
+              value={newLabelInput} onChange={(e) => setNewLabelInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddLabel()}
+              className="flex-1 bg-[#101216] border border-[#2e3545] rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-[#5865F2]"
+            />
+            <button onClick={handleAddLabel} className="bg-[#2e3545] hover:bg-[#3f4758] text-white px-3 py-2 rounded-xl text-sm font-bold transition-colors">
+              +
+            </button>
           </div>
         </div>
 
-        {/* ========================================== */}
-        {/* PRAWA KOLUMNA: PANEL INSPEKTORA (SIDEBAR)  */}
-        {/* ========================================== */}
-        <div className="w-full lg:w-80 shrink-0 flex flex-col gap-5 overflow-y-auto custom-scrollbar pr-2 pb-4">
-          
-          {/* Akcje Zgłoszenia */}
-          <div className="bg-[#161920] border border-[#1e222b] rounded-xl p-5">
-            <h3 className="text-white font-bold mb-4 uppercase text-xs tracking-wider text-[#9ca3af]">Panel Kontrolny</h3>
-            
-            {/* Widok w zależności od statusu (Otwarte vs Zamknięte) */}
-            {ticketStatus !== 'Zamknięte' ? (
-              <>
-                {/* Przypisywanie (Claim) - TYLKO DLA OTWARTYCH */}
-                <div className="mb-4">
-                  <div className="text-sm text-[#9ca3af] mb-2">Osoba przypisana:</div>
-                  {claimer ? (
-                    <div className="flex items-center gap-2 bg-[#1e222b] border border-[#2e3545] p-2.5 rounded-lg text-white text-sm font-bold">
-                      <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-xs">{claimer.charAt(0)}</div>
-                      {claimer}
-                    </div>
-                  ) : (
-                    <button 
-                      onClick={handleClaim}
-                      className="w-full bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-2 px-4 rounded-lg text-sm transition shadow-md shadow-[#5865f2]/20"
-                    >
-                      🖐️ Przypisz do mnie (Claim)
-                    </button>
-                  )}
-                </div>
-
-                <hr className="border-[#1e222b] my-4" />
-
-                {/* Zamykanie Zgłoszenia - TYLKO DLA OTWARTYCH */}
-                <div>
-                  <label className="block text-sm text-[#9ca3af] mb-2">Powód zamknięcia:</label>
-                  <input 
-                    type="text" 
-                    value={closeReason}
-                    onChange={(e) => setCloseReason(e.target.value)}
-                    placeholder="np. Problem rozwiązany..."
-                    className="w-full bg-[#101216] border border-[#2e3545] text-white text-sm rounded-lg px-3 py-2 mb-3 focus:outline-none focus:border-red-500 transition"
-                  />
-                  <button 
-                    onClick={handleCloseTicket}
-                    disabled={isClosing}
-                    className="w-full bg-[#DA373C]/10 hover:bg-[#DA373C]/20 border border-[#DA373C]/50 text-[#DA373C] font-bold py-2 px-4 rounded-lg text-sm transition flex justify-center items-center gap-2"
-                  >
-                    {isClosing ? '⏳ Zamykanie...' : '🔒 Zamknij Zgłoszenie'}
-                  </button>
-                </div>
-              </>
-            ) : (
-              // Widok DLA ZAMKNIĘTYCH TRANSKRYPTÓW
-              <div className="flex flex-col gap-4">
-                <div className="bg-red-500/10 border border-red-500/20 p-3 rounded-lg text-center">
-                  <span className="text-red-400 font-bold text-sm flex items-center justify-center gap-2">
-                    🔒 Zgłoszenie zarchiwizowane
-                  </span>
-                </div>
-                
-                {/* Nowy przycisk pobierania PDF */}
-                <button 
-                  onClick={handleDownloadPDF}
-                  disabled={isDownloading}
-                  className="w-full bg-[#1e222b] hover:bg-[#252a36] text-white font-bold py-3 px-4 rounded-xl text-sm transition border border-[#2e3545] hover:border-[#5865F2] disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
-                >
-                  {isDownloading ? '⏳ Generowanie pliku...' : '📥 Pobierz transkrypt (PDF)'}
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Wewnętrzne Notatki (Notes) */}
-          <div className="bg-[#161920] border border-[#1e222b] rounded-xl p-5 flex-1 flex flex-col">
-            <h3 className="text-white font-bold mb-4 uppercase text-xs tracking-wider text-[#9ca3af] flex items-center gap-2">
-              📝 Notatki wewnętrzne
-            </h3>
-            
-            <div className="flex-1 space-y-3 mb-4 overflow-y-auto max-h-60 custom-scrollbar pr-2">
-              {internalNotes.map(note => (
-                <div key={note.id} className="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded-lg relative group">
-                  <div className="text-xs font-bold text-yellow-500 mb-1">{note.author}</div>
-                  <div className="text-sm text-[#d1d5db]">{note.text}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Dodawanie notatek dostępne nawet po zamknięciu ticketa */}
-            <div className="mt-auto shrink-0">
-              <textarea 
-                value={newNote}
-                onChange={(e) => setNewNote(e.target.value)}
-                placeholder="Dodaj notatkę dla innych adminów..."
-                className="w-full bg-[#101216] border border-[#2e3545] text-white text-sm rounded-lg px-3 py-2 min-h-[80px] resize-none focus:outline-none focus:border-yellow-500 transition mb-2"
-              ></textarea>
-              <button 
-                onClick={handleAddNote}
-                disabled={!newNote.trim()}
-                className="w-full bg-[#1e222b] hover:bg-yellow-500/20 text-[#9ca3af] hover:text-yellow-500 border border-[#2e3545] hover:border-yellow-500/50 font-bold py-2 px-4 rounded-lg text-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                ➕ Dodaj notatkę
-              </button>
-            </div>
-          </div>
-
+        {/* Destructive Actions */}
+        <div className="bg-[#161920] border border-[#1e222b] rounded-2xl p-6 shadow-sm mt-auto border-t-4 border-t-[#DA373C]">
+          <h3 className="font-bold text-lg text-white mb-4">Akcje Administracyjne</h3>
+          <button 
+            onClick={handleCloseTicket} disabled={isClosing}
+            className="w-full bg-[#DA373C] hover:bg-red-700 text-white font-bold py-3.5 px-4 rounded-xl transition shadow-lg shadow-red-600/20 text-sm flex justify-center items-center gap-2 disabled:opacity-50"
+          >
+            {isClosing ? 'Zamykanie zgłoszenia...' : '🔒 Zamknij Ticket (Close)'}
+          </button>
         </div>
+
       </div>
+
     </div>
   );
 }
