@@ -17,4 +17,29 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  /* SMUKŁY I CIEMNY PASEK PRZEWIJANIA (Webkit - Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 6px;  /* Cieniutki pasek w pionie */
+  height: 6px; /* Cieniutki pasek w poziomie */
 }
+
+::-webkit-scrollbar-track {
+  background: transparent; /* Wtapia się w tło */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e222b; /* Kolor naszych ramek, dyskretny */
+  border-radius: 10px; /* Zaokrąglony, nowoczesny kształt */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2e3545; /* Lekkie pojaśnienie po najechaniu myszką */
+}
+
+/* WSPARCIE DLA FIREFOXA */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #1e222b transparent;
+}
+}
+
