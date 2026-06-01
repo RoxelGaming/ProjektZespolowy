@@ -1,88 +1,153 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-
-// Przykładowe dane serwerów użytkownika pobrane z Discord API
-const mockServers = [
-  { id: '123456789', name: 'Projekt Zespołowy Dev', isManaged: true, memberCount: 15 },
-  { id: '987654321', name: 'Support Community', isManaged: true, memberCount: 142 },
-  { id: '555666777', name: 'GamerZone UJD', isManaged: false, memberCount: 89 },
-];
+import { useState } from 'react';
+import { useToast } from '../contexts/ToastContext';
+import { useSettings } from '../contexts/SettingsContext';
 
 export default function DashboardPage() {
-  const [loading, setLoading] = useState(false);
+  const { addToast } = useToast();
+  const { language } = useSettings(); // Pobieranie aktualnego języka z kontekstu
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Usunęliśmy funkcję getPath()!
+  // ==========================================
+  // SŁOWNIK TŁUMACZEŃ (PL / EN)
+  // ==========================================
+  const t = {
+    refreshSuccess: language === 'pl' ? 'Lista serwerów została odświeżona.' : 'Server list has been refreshed.',
+    authRedirect: language === 'pl' ? 'Przekierowanie do autoryzacji Discord...' : 'Redirecting to Discord authorization...',
+    title: language === 'pl' ? 'Wybór Serwera' : 'Server Selection',
+    subtitle: language === 'pl' ? 'Wybierz serwer, którym chcesz zarządzać, lub dodaj bota do nowego.' : 'Select a server you want to manage, or add the bot to a new one.',
+    refreshing: language === 'pl' ? '⏳ Odświeżanie...' : '⏳ Refreshing...',
+    refresh: language === 'pl' ? '🔄 Odśwież listę' : '🔄 Refresh list',
+    addBot: language === 'pl' ? '➕ Dodaj Bota' : '➕ Add Bot',
+    yourServers: language === 'pl' ? 'Twoje Serwery' : 'Your Servers',
+    active: language === 'pl' ? 'Aktywny' : 'Active',
+    goToDashboard: language === 'pl' ? 'Przejdź do panelu' : 'Go to dashboard',
+    otherServers: language === 'pl' ? 'Pozostałe Serwery' : 'Other Servers',
+    configureBot: language === 'pl' ? 'Skonfiguruj bota' : 'Configure bot',
+  };
 
-  const handleRefresh = () => {
-    setLoading(true);
-    setTimeout(() => setLoading(false), 1000);
+  // Funkcja obsługująca przycisk odświeżania (SCRUM-107)
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    // Symulacja pobierania danych z API
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    addToast(t.refreshSuccess, 'success');
+    setIsRefreshing(false);
+  };
+
+  // Funkcja obsługująca przycisk autoryzacji (SCRUM-106)
+  const handleAuthorize = () => {
+    addToast(t.authRedirect, 'info');
+    // Tutaj w przyszłości pojawi się przekierowanie na stronę OAuth2 Discorda
   };
 
   return (
-    <div className="space-y-8 animate-fadeIn">
-      {/* Nagłówek i odświeżanie */}
-      <div className="flex justify-between items-center border-b border-[#1e222b] pb-5">
+    <div className="max-w-6xl space-y-8 animate-fadeIn">
+      
+      {/* Nagłówek i przyciski akcji */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#1e222b] pb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Wybór Serwera</h1>
-          <p className="text-[#9ca3af] text-sm mt-1">Wybierz serwer z autoryzacją Discord OAuth2, aby zarządzać systemem ticketów.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-white">{t.title}</h1>
+          <p className="text-[#9ca3af] mt-2">{t.subtitle}</p>
         </div>
-        <button 
-          onClick={handleRefresh}
-          className="bg-[#1e222b] hover:bg-[#252a36] text-sm font-semibold px-4 py-2.5 rounded-xl transition border border-[#2e3545] text-white flex items-center gap-2"
-        >
-          {loading ? 'Odświeżanie...' : '🔄 Odśwież listę'}
-        </button>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="bg-[#1e222b] hover:bg-[#252a36] text-white font-medium py-2.5 px-4 rounded-xl text-sm transition border border-[#2e3545] disabled:opacity-50 flex items-center gap-2"
+          >
+            {isRefreshing ? t.refreshing : t.refresh}
+          </button>
+          <button 
+            onClick={handleAuthorize}
+            className="bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-2.5 px-4 rounded-xl text-sm transition shadow-lg shadow-[#5865f2]/20 flex items-center gap-2"
+          >
+            {t.addBot}
+          </button>
+        </div>
       </div>
 
-      {/* Kontener Twoich Serwerów */}
+      {/* Sekcja: Twoje Serwery (Skonfigurowane / SCRUM-102) */}
       <section>
-        <h2 className="text-xs font-bold text-[#6b7280] uppercase tracking-widest mb-4">Twoje Serwery (Aktywny bot)</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockServers.filter(s => s.isManaged).map(server => (
-            <div key={server.id} className="bg-[#161920] border border-[#1e222b] p-6 rounded-2xl hover:border-[#5865F2] transition flex flex-col justify-between h-48 group">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 shrink-0 bg-[#1e222b] rounded-2xl flex items-center justify-center text-lg font-bold text-[#5865F2] border border-[#2e3545] group-hover:border-[#5865F2]/50 transition">
-                  {server.name.charAt(0)}
-                </div>
-                <div>
-                  <h3 className="font-bold text-white text-base leading-tight">{server.name}</h3>
-                  <p className="text-xs text-[#6b7280] mt-1">{server.memberCount} członków zespołu</p>
-                </div>
+        <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+          {t.yourServers}
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          
+          {/* Przykładowa Karta Serwera 1 */}
+          <Link href="/dashboard/123456789" className="bg-[#161920] border border-[#1e222b] hover:border-[#5865F2] rounded-2xl p-5 transition-all group cursor-pointer block">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-[#2e3545] rounded-full flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform">
+                🎮
               </div>
-              
-              {/* Tutaj dajemy czysty link bez getPath! */}
-              <Link href={`/dashboard/${server.id}`} className="w-full text-center bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-2.5 px-4 rounded-xl text-sm transition shadow-lg shadow-[#5865f2]/10">
-                Przejdź do zarządzania
-              </Link>
+              <div className="flex-1 overflow-hidden">
+                <h3 className="text-white font-bold truncate">Roxel Gaming</h3>
+                <p className="text-xs text-[#9ca3af] mt-0.5">ID: 123456789</p>
+              </div>
+              <div className="bg-emerald-500/10 text-emerald-400 text-xs font-bold px-2.5 py-1 rounded-md border border-emerald-500/20">
+                {t.active}
+              </div>
             </div>
-          ))}
+            <div className="mt-5 pt-4 border-t border-[#1e222b] text-sm text-[#9ca3af] flex justify-between items-center group-hover:text-white transition-colors">
+              {t.goToDashboard} <span>→</span>
+            </div>
+          </Link>
+
+          {/* Przykładowa Karta Serwera 2 */}
+          <Link href="/dashboard/987654321" className="bg-[#161920] border border-[#1e222b] hover:border-[#5865F2] rounded-2xl p-5 transition-all group cursor-pointer block">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-[#2e3545] rounded-full flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform">
+                🛡️
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <h3 className="text-white font-bold truncate">Community Support</h3>
+                <p className="text-xs text-[#9ca3af] mt-0.5">ID: 987654321</p>
+              </div>
+              <div className="bg-emerald-500/10 text-emerald-400 text-xs font-bold px-2.5 py-1 rounded-md border border-emerald-500/20">
+                {t.active}
+              </div>
+            </div>
+            <div className="mt-5 pt-4 border-t border-[#1e222b] text-sm text-[#9ca3af] flex justify-between items-center group-hover:text-white transition-colors">
+              {t.goToDashboard} <span>→</span>
+            </div>
+          </Link>
+
         </div>
       </section>
 
-      {/* Kontener Pozostałych Serwerów */}
-      <section className="pt-4">
-        <h2 className="text-xs font-bold text-[#6b7280] uppercase tracking-widest mb-4">Pozostałe Serwery (Zaproś bota)</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {mockServers.filter(s => !s.isManaged).map(server => (
-            <div key={server.id} className="bg-[#161920] border border-[#1e222b] p-6 rounded-2xl flex flex-col justify-between h-48">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 shrink-0 bg-[#1e222b] rounded-2xl flex items-center justify-center text-lg font-bold text-[#9ca3af] border border-[#2e3545]">
-                  {server.name.charAt(0)}
-                </div>
-                <div>
-                  <h3 className="font-bold text-white text-base leading-tight">{server.name}</h3>
-                  <p className="text-xs text-[#6b7280] mt-1">{server.memberCount} członków</p>
-                </div>
+      {/* Sekcja: Pozostałe Serwery (Wymagają konfiguracji / SCRUM-104) */}
+      <section className="mt-10">
+        <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-[#9ca3af]"></span>
+          {t.otherServers}
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 opacity-70 hover:opacity-100 transition-opacity duration-300">
+          
+          {/* Przykładowa Karta Nieaktywnego Serwera */}
+          <div className="bg-[#161920] border border-[#1e222b] rounded-2xl p-5">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-[#2e3545] rounded-full flex items-center justify-center text-xl shrink-0">
+                📝
               </div>
-              <button className="w-full bg-[#1e222b] hover:bg-[#252a36] text-[#9ca3af] hover:text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition border border-[#2e3545]">
-                Autoryzuj i zaproś bota
-              </button>
+              <div className="flex-1 overflow-hidden">
+                <h3 className="text-white font-bold truncate">Test Server</h3>
+                <p className="text-xs text-[#9ca3af] mt-0.5">ID: 112233445</p>
+              </div>
             </div>
-          ))}
+            <button 
+              onClick={handleAuthorize}
+              className="w-full mt-5 bg-[#1e222b] hover:bg-[#252a36] text-white font-medium py-2 rounded-xl text-sm transition border border-[#2e3545]"
+            >
+              {t.configureBot}
+            </button>
+          </div>
+
         </div>
       </section>
+
     </div>
   );
 }

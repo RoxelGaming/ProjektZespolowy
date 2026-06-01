@@ -1,6 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
+import { useSettings } from '../../contexts/SettingsContext';
 
 // Dane testowe serwerów do dopasowania nazwy w nagłówku
 const mockServers = [
@@ -12,14 +13,17 @@ const mockServers = [
 export default function Topbar() {
   const params = useParams();
   const serverId = params?.serverId as string;
+  
+  // Pobieramy aktywny język do przetłumaczenia nazwy zastępczej
+  const { language } = useSettings();
 
   // Szukamy nazwy serwera na podstawie ID z adresu URL
   const currentServer = mockServers.find(s => s.id === serverId);
-  const serverName = currentServer ? currentServer.name : 'Panel Zarządzania';
+  const serverName = currentServer ? currentServer.name : (language === 'pl' ? 'Panel Zarządzania' : 'Management Panel');
 
   return (
-    <header className="h-16 bg-[#161920] border-b border-[#1e222b] flex items-center justify-center px-6 shrink-0">
-      <span className="text-white font-semibold text-base tracking-wide select-none">
+    <header className="h-16 bg-[#161920] border-b border-[#1e222b] flex items-center justify-center px-6 shrink-0 transition-colors duration-300">
+      <span className="text-white font-semibold text-base tracking-wide select-none transition-colors">
         {serverName}
       </span>
     </header>

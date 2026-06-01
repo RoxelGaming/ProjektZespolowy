@@ -1,12 +1,5 @@
 @import "tailwindcss";
 
-
-/* 
-  Globalny reset i ustawienia bazowe dla Web Dashboardu.
-  Dzięki temu cała strona automatycznie zyska ciemną estetykę Discorda,
-  znikną domyślne marginesy przeglądarki, a czcionka będzie gładka.
-*/
-
 @layer base {
   html, body {
     margin: 0;
@@ -16,30 +9,299 @@
     font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    transition: filter 0.4s ease, background-color 0.4s ease, font-size 0.3s ease;
   }
-  /* SMUKŁY I CIEMNY PASEK PRZEWIJANIA (Webkit - Chrome, Edge, Safari) */
-::-webkit-scrollbar {
-  width: 6px;  /* Cieniutki pasek w pionie */
-  height: 6px; /* Cieniutki pasek w poziomie */
+
+  /* ========================================================= */
+  /* Opcje dostępności (Skalowanie i Odstępy)                  */
+  /* ========================================================= */
+  
+  html[data-fontsize="small"] { font-size: 14px !important; }
+  html[data-fontsize="medium"] { font-size: 16px !important; }
+  html[data-fontsize="large"] { font-size: 18px !important; }
+
+  html[data-spacing="wide"] * { letter-spacing: 0.05em !important; }
+
+  /* ========================================================= */
+  /* STANDARDOWY MOTYW JASNY (Bez wysokiego kontr.)            */
+  /* ========================================================= */
+  
+  html:not(.dark):not([data-contrast="high"]) {
+    filter: invert(1) hue-rotate(180deg);
+    background-color: #efedeb; 
+  }
+
+  html:not(.dark):not([data-contrast="high"]) img, 
+  html:not(.dark):not([data-contrast="high"]) svg,
+  html:not(.dark):not([data-contrast="high"]) video {
+    filter: invert(1) hue-rotate(180deg);
+  }
+
+  /* ========================================================= */
+  /* TWARDY WYSOKI KONTRAST (Reguły WCAG)                      */
+  /* ========================================================= */
+  
+  html[data-contrast="high"] {
+    filter: none !important;
+  }
+
+  /* ---------------------------------------------------------
+     🌙 CIEMNY MOTYW WYSOKIEGO KONTRASTU (Dark HC)
+     --------------------------------------------------------- */
+  
+  html.dark[data-contrast="high"] body,
+  html.dark[data-contrast="high"] main,
+  html.dark[data-contrast="high"] aside,
+  html.dark[data-contrast="high"] header,
+  html.dark[data-contrast="high"] section,
+  html.dark[data-contrast="high"] nav,
+  html.dark[data-contrast="high"] form,
+  html.dark[data-contrast="high"] table,
+  html.dark[data-contrast="high"] tr,
+  html.dark[data-contrast="high"] td,
+  html.dark[data-contrast="high"] th,
+  html.dark[data-contrast="high"] [class*="bg-[#"],
+  html.dark[data-contrast="high"] [class*="bg-gray-"],
+  html.dark[data-contrast="high"] [class*="bg-black"],
+  html.dark[data-contrast="high"] [class*="bg-white"] {
+    background-color: #000000 !important;
+    border-color: #FFFFFF !important;
+  }
+
+  html.dark[data-contrast="high"] body,
+  html.dark[data-contrast="high"] h1,
+  html.dark[data-contrast="high"] h2,
+  html.dark[data-contrast="high"] h3,
+  html.dark[data-contrast="high"] h4,
+  html.dark[data-contrast="high"] p,
+  html.dark[data-contrast="high"] span,
+  html.dark[data-contrast="high"] label,
+  html.dark[data-contrast="high"] div {
+    color: #FACC15 !important;
+  }
+
+  html.dark[data-contrast="high"] [class*="text-[#9ca3af]"],
+  html.dark[data-contrast="high"] [class*="text-[#6b7280]"],
+  html.dark[data-contrast="high"] [class*="text-gray-"],
+  html.dark[data-contrast="high"] .text-xs {
+    color: #E5E7EB !important;
+  }
+
+  html.dark[data-contrast="high"] input,
+  html.dark[data-contrast="high"] textarea,
+  html.dark[data-contrast="high"] select {
+    background-color: #000000 !important;
+    color: #FACC15 !important;
+    border: 2px solid #FFFFFF !important;
+  }
+
+  html.dark[data-contrast="high"] a {
+    color: #22D3EE !important;
+    text-decoration: underline !important;
+    text-decoration-thickness: 2px !important;
+    text-underline-offset: 4px !important;
+  }
+
+  /* =========== PRZYCISKI - NAPRAWA WIDOCZNOŚCI =========== */
+  
+  /* Baza dla każdego przycisku (Zwykłe, Eksport, Zapisz) */
+  html.dark[data-contrast="high"] button {
+    background-color: #000000 !important;
+    color: #FACC15 !important;
+    border: 2px solid #FACC15 !important;
+    font-weight: bold !important;
+  }
+  
+  /* Przyciski przezroczyste (Taby "Multi-Panels" i pozycje list np. Właściciel) */
+  html.dark[data-contrast="high"] button[class*="border-transparent"],
+  html.dark[data-contrast="high"] button[class*="text-[#9ca3af]"] {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    color: #E5E7EB !important;
+  }
+
+  /* Główne akcje (Niebieskie / Wyróżnione) */
+  html.dark[data-contrast="high"] button[class*="bg-[#5865F2]"] {
+    background-color: #FACC15 !important;
+    color: #000000 !important;
+    border-color: #FACC15 !important;
+  }
+
+  /* Akcje destrukcyjne (Czerwone) */
+  html.dark[data-contrast="high"] button[class*="bg-[#DA373C]"],
+  html.dark[data-contrast="high"] button[class*="bg-red-"] {
+    background-color: #F87171 !important;
+    color: #000000 !important;
+    border-color: #F87171 !important;
+  }
+
+  /* Rozwiązanie problemu tekstów zagnieżdżonych wewnątrz przycisków */
+  html.dark[data-contrast="high"] button[class*="bg-[#5865F2]"] *,
+  html.dark[data-contrast="high"] button:hover * {
+    color: #000000 !important;
 }
 
-::-webkit-scrollbar-track {
-  background: transparent; /* Wtapia się w tło */
+  /* Przełączniki on/off w panelach */
+  html.dark[data-contrast="high"] button[aria-pressed="false"] {
+    background-color: transparent !important;
+    color: #E5E7EB !important;
+    border: 2px solid #E5E7EB !important;
+  }
+
+  /* Aktywne stany Hover ZAWSZE na końcu, aby nadpisały inne stany przycisku */
+  html.dark[data-contrast="high"] button:hover,
+  html.dark[data-contrast="high"] a:hover {
+    background-color: #FACC15 !important;
+    color: #000000 !important;
+    border: 2px solid #FACC15 !important;
+  }
+  html.dark[data-contrast="high"] button[class*="bg-[#DA373C]"]:hover,
+  html.dark[data-contrast="high"] button[class*="bg-red-"]:hover {
+    background-color: #000000 !important;
+    color: #F87171 !important;
+    border-color: #F87171 !important;
+  }
+
+  html.dark[data-contrast="high"] *:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 4px #000000, 0 0 0 8px #FACC15 !important;
+  }
+
+  /* ---------------------------------------------------------
+     ☀️ JASNY MOTYW WYSOKIEGO KONTRASTU (Light HC)
+     --------------------------------------------------------- */
+  
+  html:not(.dark)[data-contrast="high"] body,
+  html:not(.dark)[data-contrast="high"] main,
+  html:not(.dark)[data-contrast="high"] aside,
+  html:not(.dark)[data-contrast="high"] header,
+  html:not(.dark)[data-contrast="high"] section,
+  html:not(.dark)[data-contrast="high"] nav,
+  html:not(.dark)[data-contrast="high"] form,
+  html:not(.dark)[data-contrast="high"] table,
+  html:not(.dark)[data-contrast="high"] tr,
+  html:not(.dark)[data-contrast="high"] td,
+  html:not(.dark)[data-contrast="high"] th,
+  html:not(.dark)[data-contrast="high"] [class*="bg-[#"],
+  html:not(.dark)[data-contrast="high"] [class*="bg-gray-"],
+  html:not(.dark)[data-contrast="high"] [class*="bg-black"],
+  html:not(.dark)[data-contrast="high"] [class*="bg-white"] {
+    background-color: #FFFFFF !important;
+    border-color: #000000 !important;
+  }
+
+  html:not(.dark)[data-contrast="high"] body,
+  html:not(.dark)[data-contrast="high"] h1,
+  html:not(.dark)[data-contrast="high"] h2,
+  html:not(.dark)[data-contrast="high"] h3,
+  html:not(.dark)[data-contrast="high"] h4,
+  html:not(.dark)[data-contrast="high"] p,
+  html:not(.dark)[data-contrast="high"] span,
+  html:not(.dark)[data-contrast="high"] label,
+  html:not(.dark)[data-contrast="high"] div {
+    color: #000000 !important;
+  }
+
+  html:not(.dark)[data-contrast="high"] [class*="text-[#9ca3af]"],
+  html:not(.dark)[data-contrast="high"] [class*="text-[#6b7280]"],
+  html:not(.dark)[data-contrast="high"] [class*="text-gray-"],
+  html:not(.dark)[data-contrast="high"] .text-xs {
+    color: #111827 !important;
+  }
+
+  html:not(.dark)[data-contrast="high"] input,
+  html:not(.dark)[data-contrast="high"] textarea,
+  html:not(.dark)[data-contrast="high"] select {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    border: 2px solid #000000 !important;
+  }
+
+  html:not(.dark)[data-contrast="high"] a {
+    color: #1E3A8A !important;
+    text-decoration: underline !important;
+    text-decoration-thickness: 2px !important;
+    text-underline-offset: 4px !important;
+  }
+
+  /* =========== PRZYCISKI (LIGHT HC) =========== */
+  
+  html:not(.dark)[data-contrast="high"] button {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    border: 2px solid #000000 !important;
+    font-weight: bold !important;
+  }
+
+  html:not(.dark)[data-contrast="high"] button[class*="border-transparent"],
+  html:not(.dark)[data-contrast="high"] button[class*="text-[#9ca3af]"] {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    color: #111827 !important;
+  }
+
+  html:not(.dark)[data-contrast="high"] button[class*="bg-[#5865F2]"] {
+    background-color: #1E3A8A !important;
+    color: #FFFFFF !important;
+    border-color: #1E3A8A !important;
+  }
+
+  html:not(.dark)[data-contrast="high"] button[class*="bg-[#DA373C]"],
+  html:not(.dark)[data-contrast="high"] button[class*="bg-red-"] {
+    background-color: #7F1D1D !important;
+    color: #FFFFFF !important;
+    border-color: #7F1D1D !important;
+  }
+
+  html:not(.dark)[data-contrast="high"] button[class*="bg-[#5865F2]"] *,
+  html:not(.dark)[data-contrast="high"] button:hover * {
+    color: #FFFFFF !important;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #1e222b; /* Kolor naszych ramek, dyskretny */
-  border-radius: 10px; /* Zaokrąglony, nowoczesny kształt */
-}
+  html:not(.dark)[data-contrast="high"] button[aria-pressed="false"] {
+    background-color: transparent !important;
+    color: #111827 !important;
+    border: 2px solid #111827 !important;
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #2e3545; /* Lekkie pojaśnienie po najechaniu myszką */
-}
+  html:not(.dark)[data-contrast="high"] button:hover,
+  html:not(.dark)[data-contrast="high"] a:hover {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+    border: 2px solid #000000 !important;
+  }
+  
+  html:not(.dark)[data-contrast="high"] button[class*="bg-[#DA373C]"]:hover,
+  html:not(.dark)[data-contrast="high"] button[class*="bg-red-"]:hover {
+    background-color: #FFFFFF !important;
+    color: #7F1D1D !important;
+    border-color: #7F1D1D !important;
+  }
 
-/* WSPARCIE DLA FIREFOXA */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #1e222b transparent;
-}
-}
+  html:not(.dark)[data-contrast="high"] *:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 4px #FFFFFF, 0 0 0 8px #000000 !important;
+  }
 
+  /* ========================================================= */
+  /* Pasek przewijania (Scrollbar)                             */
+  /* ========================================================= */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1e222b;
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2e3545;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #1e222b transparent;
+  }
+}
