@@ -10,11 +10,10 @@ interface SidebarNavItemProps {
 }
 
 export default function SidebarNavItem({ href, label, active, onClick }: SidebarNavItemProps) {
-  const basePath = process.env.NODE_ENV === 'production' ? '/projektzespolowy' : '';
-  
+  // Wywaliliśmy stąd basePath!
   return (
     <Link 
-      href={`${basePath}${href}`} 
+      href={href} 
       onClick={onClick}
       className={`px-4 py-3 rounded-xl text-sm font-medium transition duration-200 block ${
         active 

@@ -1,11 +1,9 @@
-import type { NextConfig } from "next";
-
-// Sprawdzamy, czy aplikacja buduje się w trybie produkcyjnym
-const isProd = process.env.NODE_ENV === 'production';
-
-const nextConfig: NextConfig = {
-  // Jeśli to produkcja -> użyj /projektzespolowy, jeśli lokalny dev -> zostaw puste
-  basePath: isProd ? "/projektzespolowy" : "",
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // Jeśli masz to w jakimś podfolderze na serwerze (np. na GitHub Pages lub uczelnianym), wpisz to tu:
+  basePath: process.env.NODE_ENV === 'production' ? '/projektzespolowy' : '',
+  
+  // Reszta Twoich ustawień (np. turbopack)
 };
 
 export default nextConfig;

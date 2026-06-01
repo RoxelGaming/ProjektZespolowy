@@ -13,11 +13,7 @@ const mockServers = [
 export default function DashboardPage() {
   const [loading, setLoading] = useState(false);
 
-  // Funkcja dodająca prefiks produkcyjny cPanelu
-  const getPath = (path: string) => {
-    const basePath = process.env.NODE_ENV === 'production' ? '/projektzespolowy' : '';
-    return `${basePath}${path}`;
-  };
+  // Usunęliśmy funkcję getPath()!
 
   const handleRefresh = () => {
     setLoading(true);
@@ -26,7 +22,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8 animate-fadeIn">
-      {/* Nagłówek i odświeżanie (SCRUM-107) */}
+      {/* Nagłówek i odświeżanie */}
       <div className="flex justify-between items-center border-b border-[#1e222b] pb-5">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Wybór Serwera</h1>
@@ -40,7 +36,7 @@ export default function DashboardPage() {
         </button>
       </div>
 
-      {/* SCRUM-102: Kontener Twoich Serwerów */}
+      {/* Kontener Twoich Serwerów */}
       <section>
         <h2 className="text-xs font-bold text-[#6b7280] uppercase tracking-widest mb-4">Twoje Serwery (Aktywny bot)</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -55,8 +51,9 @@ export default function DashboardPage() {
                   <p className="text-xs text-[#6b7280] mt-1">{server.memberCount} członków zespołu</p>
                 </div>
               </div>
-              {/* Dynamiczne przekierowanie do konkretnego ID serwera */}
-              <Link href={getPath(`/dashboard/${server.id}/settings`)} className="w-full text-center bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-2.5 px-4 rounded-xl text-sm transition shadow-lg shadow-[#5865f2]/10">
+              
+              {/* Tutaj dajemy czysty link bez getPath! */}
+              <Link href={`/dashboard/${server.id}`} className="w-full text-center bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-2.5 px-4 rounded-xl text-sm transition shadow-lg shadow-[#5865f2]/10">
                 Przejdź do zarządzania
               </Link>
             </div>
@@ -64,7 +61,7 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      {/* SCRUM-104: Kontener Pozostałych Serwerów */}
+      {/* Kontener Pozostałych Serwerów */}
       <section className="pt-4">
         <h2 className="text-xs font-bold text-[#6b7280] uppercase tracking-widest mb-4">Pozostałe Serwery (Zaproś bota)</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -79,7 +76,6 @@ export default function DashboardPage() {
                   <p className="text-xs text-[#6b7280] mt-1">{server.memberCount} członków</p>
                 </div>
               </div>
-              {/* Przycisk zaproszenia bota (SCRUM-106) */}
               <button className="w-full bg-[#1e222b] hover:bg-[#252a36] text-[#9ca3af] hover:text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition border border-[#2e3545]">
                 Autoryzuj i zaproś bota
               </button>

@@ -14,10 +14,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const params = useParams();
   const serverId = params?.serverId as string;
 
-  const getPath = (path: string) => {
-    const basePath = process.env.NODE_ENV === 'production' ? '/projektzespolowy' : '';
-    return `${basePath}${path}`;
-  };
+  // Usunęliśmy stąd ręczne getPath() - Next.js zajmie się tym sam!
 
   return (
     <>
@@ -70,14 +67,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           )}
         </nav>
 
-        {/* Dolna sekcja */}
+        {/* Dolna sekcja z czystymi linkami */}
         <div className="pt-6 border-t border-[#1e222b]">
           {serverId ? (
-            <Link href={getPath('/dashboard')} onClick={onClose} className="text-sm font-medium text-red-400 hover:text-red-300 transition flex items-center gap-2">
+            <Link href="/dashboard" onClick={onClose} className="text-sm font-medium text-red-400 hover:text-red-300 transition flex items-center gap-2">
               ← Zmień serwer
             </Link>
           ) : (
-            <Link href={getPath('/')} onClick={onClose} className="text-sm font-medium text-[#6b7280] hover:text-white transition flex items-center gap-2">
+            <Link href="/" onClick={onClose} className="text-sm font-medium text-[#6b7280] hover:text-white transition flex items-center gap-2">
               ← Strona główna
             </Link>
           )}

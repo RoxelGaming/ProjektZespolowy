@@ -1,17 +1,16 @@
 import Link from 'next/link';
 
 export default function LandingHeader() {
-  const getPath = (path: string) => {
-    const basePath = process.env.NODE_ENV === 'production' ? '/projektzespolowy' : '';
-    return `${basePath}${path}`;
-  };
+  
+  // Tu też usunęliśmy getPath()
 
   return (
     <header className="max-w-6xl w-full mx-auto px-6 py-4 flex justify-between items-center border-b border-[#1e222b]">
       <div className="flex items-center gap-3">
         <div className="relative w-9 h-9 overflow-hidden rounded-xl">
+          {/* Używamy czystej ścieżki do loga! Next.js zajmie się resztą w configu */}
           <img 
-            src={getPath("/LOGO.png")} 
+            src="/LOGO.png" 
             alt="TicketBot Logo" 
             className="object-cover w-full h-full"
           />
