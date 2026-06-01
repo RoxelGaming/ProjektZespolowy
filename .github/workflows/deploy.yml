@@ -31,13 +31,16 @@ jobs:
           path: projekt-zespolowy-tiket-bot/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('projekt-zespolowy-tiket-bot/package-lock.json') }}
 
-      - name: 📦 Instalacja zależności
-        run: npm install
+      - name: 📦 Instalacja zależności (Czysta)
+        run: npm ci
 
       - name: 🔨 Budowanie projektu
         run: npm run build
 
-      - name: 🧹 Optymalizacja i przygotowanie pliku restartu
+      - name: ✂️ Odchudzanie node_modules (Tylko pliki produkcyjne)
+        run: npm prune --omit=dev
+
+      - name: 🧹 Optymalizacja i kompresja do jednego pliku (Omija blokady SFTP!)
         run: |
           rm -rf .next/cache
           rm -rf .next/turbopack
@@ -46,19 +49,38 @@ jobs:
           rm -rf ../.git
           rm -f .env.example
           rm -f README.md
-          # Tworzymy magiczny plik restartu LOKALNIE w GitHubie
-          mkdir -p tmp
-          touch tmp/restart.txt
+          
+          # Tworzymy JEDEN plik paczki (deploy.tar.gz) katalog wyżej
+          # Dzięki temu transfer potrwa ułamek sekundy i nie wywali błędu!
+          tar -czf ../deploy.tar.gz -C . .
 
-      - name: 🚀 Wdrażanie na serwer Krystal (FTPS z limitem połączeń)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - name: 🚀 Wdrażanie na serwer Krystal (SFTP)
+        uses: appleboy/scp-action@master
         with:
-          server: ${{ secrets.FTP_SERVER }}
+          host: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          port: 21
-          concurrency: 5
-          local-dir: ./projekt-zespolowy-tiket-bot/
-          server-dir: ./projektzespolowy_app/
-          timeout: 600000
+          port: 722 # KLUCZOWE: Ustawienie prawidłowego portu Krystal dla SFTP
+          source: "deploy.tar.gz"
+          target: "/home/xdekhckr/projektzespolowy_app/"
+
+      - name: 🤖 Rozpakowanie, NPM Install i Restart na serwerze cPanel (SSH)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 722 # KLUCZOWE: Ustawienie prawidłowego portu Krystal dla SSH
+          script: |
+            cd /home/xdekhckr/projektzespolowy_app
+            
+            # 1. Rozpakowanie paczki na serwerze (błyskawicznie nadpisuje stare pliki)
+            tar -xzf deploy.tar.gz
+            
+            # 2. Usunięcie paczki po udanym rozpakowaniu, by nie śmiecić na dysku
+            rm deploy.tar.gz
+            
+            # 3. Instalacja modułów na serwerze Krystal i restart aplikacji
+            /home/xdekhckr/nodevenv/projektzespolowy_app/24/bin/npm install
+            mkdir -p tmp
+            touch tmp/restart.txt
