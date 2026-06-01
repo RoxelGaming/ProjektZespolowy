@@ -1,182 +1,299 @@
-"use client"
+'use client';
 
 import { useState } from 'react';
+import { useParams } from 'next/navigation';
 import { useToast } from '../../../contexts/ToastContext';
 
-type BlacklistedUser = { id: string; username: string; reason: string; dateAdded: string; avatar: string };
-type BlacklistedRole = { id: string; name: string; reason: string; dateAdded: string; color: string };
-
-const INITIAL_USERS: BlacklistedUser[] = [
-  { id: 'u1', username: 'ZlyTyp#1234', reason: 'Trolling na ticketach', dateAdded: '2026-05-31', avatar: '🤬' }
+// ==========================================
+// MOCK DATA (Początkowe dane czarnej listy)
+// ==========================================
+const MOCK_BLOCKED_USERS = [
+  { id: '8523910245', username: 'SpammerBoy', reason: 'Wysyłanie linków do scamów', blockedAt: '12.05.2026', blockedBy: 'ArturZaton' },
+  { id: '9123849123', username: 'TrollFace', reason: 'Obrażanie administracji', blockedAt: '10.05.2026', blockedBy: 'System' },
 ];
 
-const INITIAL_ROLES: BlacklistedRole[] = [
-  { id: 'br1', name: '@Muted', reason: 'Automatyczna blokada', dateAdded: '2026-05-30', color: '#4b5563' }
+const MOCK_BLOCKED_ROLES = [
+  { id: '11223344', name: 'Muted', color: '#718096', reason: 'Rola wyciszonych nie może otwierać ticketów', blockedAt: '01.05.2026', blockedBy: 'Roxel' },
 ];
 
 export default function BlacklistPage() {
+  const params = useParams();
   const { addToast } = useToast();
+  const serverId = params?.serverId as string;
 
-  const [activeBlacklistTab, setActiveBlacklistTab] = useState<'users' | 'roles'>('users');
-  const [bUsers, setBUsers] = useState<BlacklistedUser[]>(INITIAL_USERS);
-  const [bRoles, setBRoles] = useState<BlacklistedRole[]>(INITIAL_ROLES);
+  // Stany list
+  const [blockedUsers, setBlockedUsers] = useState(MOCK_BLOCKED_USERS);
+  const [blockedRoles, setBlockedRoles] = useState(MOCK_BLOCKED_ROLES);
 
-  const [modalConfig, setModalConfig] = useState<{
-    isOpen: boolean;
-    title: string;
-    description: string;
-    onConfirm: () => void;
-  }>({ isOpen: false, title: '', description: '', onConfirm: () => {} });
+  // Stany formularzy dodawania
+  const [newUserId, setNewUserId] = useState('');
+  const [newUserReason, setNewUserReason] = useState('');
+  const [newRoleId, setNewRoleId] = useState('');
+  const [newRoleReason, setNewRoleReason] = useState('');
 
-  const closeModal = () => setModalConfig({ ...modalConfig, isOpen: false });
+  // Stany dla Okna Modalnego (Zdejmowanie blokady)
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [itemToUnblock, setItemToUnblock] = useState<{ id: string, type: 'user' | 'role', name: string } | null>(null);
 
-  const openModal = (title: string, description: string, action: () => void) => {
-    setModalConfig({
-      isOpen: true,
-      title,
-      description,
-      onConfirm: () => {
-        action();
-        closeModal();
-      }
-    });
+  // ==========================================
+  // FUNKCJE AKCJI
+  // ==========================================
+  
+  // Dodawanie użytkownika do czarnej listy
+  const handleBlockUser = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newUserId.trim()) return;
+    
+    const newUser = {
+      id: newUserId,
+      username: 'Nieznany Użytkownik', // W prawdziwej apce bot pobrałby nick z Discord API
+      reason: newUserReason || 'Brak podanego powodu',
+      blockedAt: new Date().toLocaleDateString('pl-PL'),
+      blockedBy: 'Ty (Admin)'
+    };
+
+    setBlockedUsers([newUser, ...blockedUsers]);
+    setNewUserId('');
+    setNewUserReason('');
+    addToast('Użytkownik został zablokowany i nie może już tworzyć zgłoszeń.', 'success');
   };
 
-  const handleRemoveBlacklistedUser = (userId: string) => {
-    openModal(
-      'Odblokowanie użytkownika',
-      'Czy na pewno chcesz usunąć tego użytkownika z czarnej listy? Będzie mógł ponownie tworzyć zgłoszenia.',
-      () => {
-        setBUsers(bUsers.filter(u => u.id !== userId));
-        addToast('Użytkownik został odblokowany.', 'success');
-      }
-    );
+  // Dodawanie roli do czarnej listy
+  const handleBlockRole = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newRoleId.trim()) return;
+    
+    const newRole = {
+      id: newRoleId,
+      name: `Rola (${newRoleId})`, // W prawdziwej apce bot pobrałby nazwę roli z Discord API
+      color: '#9ca3af',
+      reason: newRoleReason || 'Brak podanego powodu',
+      blockedAt: new Date().toLocaleDateString('pl-PL'),
+      blockedBy: 'Ty (Admin)'
+    };
+
+    setBlockedRoles([newRole, ...blockedRoles]);
+    setNewRoleId('');
+    setNewRoleReason('');
+    addToast('Rola została dodana do czarnej listy.', 'success');
   };
 
-  const handleRemoveBlacklistedRole = (roleId: string) => {
-    openModal(
-      'Odblokowanie roli',
-      'Czy na pewno chcesz usunąć tę rolę z czarnej listy?',
-      () => {
-        setBRoles(bRoles.filter(r => r.id !== roleId));
-        addToast('Rola została usunięta z czarnej listy.', 'success');
-      }
-    );
+  // Otwieranie modalu potwierdzenia
+  const requestUnblock = (id: string, type: 'user' | 'role', name: string) => {
+    setItemToUnblock({ id, type, name });
+    setIsModalOpen(true);
+  };
+
+  // Potwierdzenie i zdjęcie blokady
+  const confirmUnblock = () => {
+    if (!itemToUnblock) return;
+
+    if (itemToUnblock.type === 'user') {
+      setBlockedUsers(blockedUsers.filter(u => u.id !== itemToUnblock.id));
+    } else {
+      setBlockedRoles(blockedRoles.filter(r => r.id !== itemToUnblock.id));
+    }
+
+    addToast(`Blokada dla ${itemToUnblock.name} została pomyślnie usunięta.`, 'success');
+    setIsModalOpen(false);
+    setItemToUnblock(null);
   };
 
   return (
-    <div className="w-full space-y-8 pb-24 relative text-white animate-fadeIn">
+    <div className="max-w-6xl space-y-8 animate-fadeIn relative">
       
-      <div className="border-b border-[#1e222b] pb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Czarna Lista (Blacklist)</h1>
-        <p className="text-[#9ca3af] mt-1">Zarządzaj użytkownikami i rolami, którym odebrano uprawnienia do otwierania zgłoszeń na Twoim serwerze.</p>
+      {/* Nagłówek */}
+      <div className="border-b border-[#1e222b] pb-5">
+        <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+          <span className="text-[#DA373C]">⛔</span> Czarna Lista (Blacklist)
+        </h1>
+        <p className="text-[#9ca3af] text-sm mt-1">Zarządzaj użytkownikami i rolami, którzy mają całkowity zakaz tworzenia nowych zgłoszeń na Twoim serwerze.</p>
       </div>
 
-      <div className="space-y-6 animate-fadeIn">
-        <div className="bg-[#161920] border border-[#1e222b] rounded-2xl p-2 flex gap-2 w-fit mb-4">
-          <button 
-            onClick={() => setActiveBlacklistTab('users')}
-            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${activeBlacklistTab === 'users' ? 'bg-[#101216] text-white shadow-sm border border-[#2e3545]' : 'text-[#9ca3af] hover:text-white hover:bg-[#1e222b]/50'}`}
-          >
-            👤 Zablokowani Użytkownicy
-          </button>
-          <button 
-            onClick={() => setActiveBlacklistTab('roles')}
-            className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${activeBlacklistTab === 'roles' ? 'bg-[#101216] text-white shadow-sm border border-[#2e3545]' : 'text-[#9ca3af] hover:text-white hover:bg-[#1e222b]/50'}`}
-          >
-            🛡️ Zablokowane Role
-          </button>
-        </div>
-
-        <div className="bg-[#161920] border border-[#1e222b] rounded-2xl overflow-hidden shadow-sm">
-          <div className="p-6 border-b border-[#1e222b] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <h3 className="font-bold text-lg text-white">
-                {activeBlacklistTab === 'users' ? 'Użytkownicy na Czarnej Liście' : 'Role na Czarnej Liście'}
-              </h3>
-              <p className="text-xs text-[#9ca3af] mt-1">Osoby lub Role widniejące poniżej nie mogą otwierać nowych zgłoszeń.</p>
-            </div>
-            <button className="bg-[#DA373C] hover:bg-red-700 text-white font-bold py-2.5 px-5 rounded-xl text-sm transition shadow-lg shadow-red-600/20 border border-red-500/50 whitespace-nowrap">
-              {activeBlacklistTab === 'users' ? '+ Zablokuj Użytkownika' : '+ Zablokuj Rolę'}
-            </button>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="bg-[#101216] text-[#9ca3af] text-xs uppercase tracking-wider font-bold">
-                <tr>
-                  <th className="p-4 border-b border-[#1e222b]">Nazwa</th>
-                  <th className="p-4 border-b border-[#1e222b]">Powód Blokady</th>
-                  <th className="p-4 border-b border-[#1e222b]">Data Dodania</th>
-                  <th className="p-4 border-b border-[#1e222b] text-right">Akcje</th>
-                </tr>
-              </thead>
-              <tbody className="bg-[#161920]">
-                {activeBlacklistTab === 'users' && bUsers.map(user => (
-                  <tr key={user.id} className="border-b border-[#1e222b] hover:bg-[#1e222b]/30 transition-colors">
-                    <td className="p-4 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-[#101216] border border-[#2e3545] flex items-center justify-center text-sm">{user.avatar}</div>
-                      <span className="font-bold text-white text-sm">{user.username}</span>
-                    </td>
-                    <td className="p-4 text-sm text-[#d1d5db]">{user.reason}</td>
-                    <td className="p-4 text-sm text-[#9ca3af]">{user.dateAdded}</td>
-                    <td className="p-4 text-right">
-                      <button onClick={() => handleRemoveBlacklistedUser(user.id)} className="text-[#9ca3af] hover:text-red-500 p-2 hover:bg-red-500/10 rounded-xl transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-
-                {activeBlacklistTab === 'roles' && bRoles.map(role => (
-                  <tr key={role.id} className="border-b border-[#1e222b] hover:bg-[#1e222b]/30 transition-colors">
-                    <td className="p-4 flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: role.color }}></div>
-                      <span className="font-bold text-white text-sm">{role.name}</span>
-                    </td>
-                    <td className="p-4 text-sm text-[#d1d5db]">{role.reason}</td>
-                    <td className="p-4 text-sm text-[#9ca3af]">{role.dateAdded}</td>
-                    <td className="p-4 text-right">
-                      <button onClick={() => handleRemoveBlacklistedRole(role.id)} className="text-[#9ca3af] hover:text-red-500 p-2 hover:bg-red-500/10 rounded-xl transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                
-                {((activeBlacklistTab === 'users' && bUsers.length === 0) || (activeBlacklistTab === 'roles' && bRoles.length === 0)) && (
-                  <tr><td colSpan={4} className="p-8 text-center text-[#6b7280]">Czarna lista jest pusta.</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {modalConfig.isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-[#161920] border border-[#1e222b] rounded-2xl w-full max-w-md p-6 shadow-2xl transform scale-100">
-            <h3 className="text-xl font-bold text-white mb-2">{modalConfig.title}</h3>
-            <p className="text-sm text-[#9ca3af] mb-8 leading-relaxed">
-              {modalConfig.description}
-            </p>
-            <div className="flex gap-3 justify-end">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+        
+        {/* ========================================== */}
+        {/* SEKCJA: ZABLOKOWANI UŻYTKOWNICY            */}
+        {/* ========================================== */}
+        <section className="space-y-4">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            👤 Zablokowani Użytkownicy ({blockedUsers.length})
+          </h2>
+          
+          {/* Formularz blokowania */}
+          <form onSubmit={handleBlockUser} className="bg-[#161920] border border-[#1e222b] rounded-xl p-4 flex flex-col gap-3">
+            <div className="flex gap-3">
+              <input 
+                type="text" 
+                placeholder="ID Użytkownika (np. 123456789)"
+                value={newUserId}
+                onChange={(e) => setNewUserId(e.target.value)}
+                className="flex-1 bg-[#101216] border border-[#2e3545] text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#DA373C] transition"
+              />
               <button 
-                onClick={closeModal}
-                className="bg-[#101216] hover:bg-[#1e222b] text-white px-5 py-2.5 rounded-xl font-semibold text-sm transition-colors border border-[#2e3545]"
+                type="submit"
+                disabled={!newUserId.trim()}
+                className="bg-[#1e222b] hover:bg-[#DA373C]/20 border border-[#2e3545] hover:border-[#DA373C]/50 text-[#9ca3af] hover:text-[#DA373C] font-bold py-2 px-4 rounded-lg text-sm transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                ➕ Zablokuj
+              </button>
+            </div>
+            <input 
+              type="text" 
+              placeholder="Opcjonalny powód blokady..."
+              value={newUserReason}
+              onChange={(e) => setNewUserReason(e.target.value)}
+              className="w-full bg-[#101216] border border-[#2e3545] text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#5865F2] transition"
+            />
+          </form>
+
+          {/* Lista zablokowanych użytkowników */}
+          <div className="bg-[#161920] border border-[#1e222b] rounded-xl overflow-hidden">
+            {blockedUsers.length > 0 ? (
+              <div className="divide-y divide-[#1e222b]">
+                {blockedUsers.map(user => (
+                  <div key={user.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#1e222b]/30 transition-colors">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-white">{user.username}</span>
+                        <span className="text-xs text-[#9ca3af] bg-[#101216] px-1.5 py-0.5 rounded border border-[#2e3545]">{user.id}</span>
+                      </div>
+                      <div className="text-sm text-[#DA373C] mt-1 font-medium flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        {user.reason}
+                      </div>
+                      <div className="text-xs text-[#6b7280] mt-1">
+                        Zablokowany: {user.blockedAt} przez {user.blockedBy}
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => requestUnblock(user.id, 'user', user.username)}
+                      className="shrink-0 bg-[#1e222b] hover:bg-[#252a36] text-white font-medium py-1.5 px-3 rounded-lg text-xs transition border border-[#2e3545]"
+                    >
+                      Odblokuj
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-8 text-center text-[#9ca3af]">
+                Brak zablokowanych użytkowników.
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ========================================== */}
+        {/* SEKCJA: ZABLOKOWANE ROLE                   */}
+        {/* ========================================== */}
+        <section className="space-y-4">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            🛡️ Zablokowane Role ({blockedRoles.length})
+          </h2>
+          
+          {/* Formularz blokowania */}
+          <form onSubmit={handleBlockRole} className="bg-[#161920] border border-[#1e222b] rounded-xl p-4 flex flex-col gap-3">
+            <div className="flex gap-3">
+              {/* W normalnej aplikacji zamiast inputa byłby tu Select <select> pobierający role z API */}
+              <input 
+                type="text" 
+                placeholder="ID Roli Discord (np. 9988776655)"
+                value={newRoleId}
+                onChange={(e) => setNewRoleId(e.target.value)}
+                className="flex-1 bg-[#101216] border border-[#2e3545] text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#DA373C] transition"
+              />
+              <button 
+                type="submit"
+                disabled={!newRoleId.trim()}
+                className="bg-[#1e222b] hover:bg-[#DA373C]/20 border border-[#2e3545] hover:border-[#DA373C]/50 text-[#9ca3af] hover:text-[#DA373C] font-bold py-2 px-4 rounded-lg text-sm transition disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                ➕ Zablokuj
+              </button>
+            </div>
+            <input 
+              type="text" 
+              placeholder="Opcjonalny powód blokady roli..."
+              value={newRoleReason}
+              onChange={(e) => setNewRoleReason(e.target.value)}
+              className="w-full bg-[#101216] border border-[#2e3545] text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-[#5865F2] transition"
+            />
+          </form>
+
+          {/* Lista zablokowanych ról */}
+          <div className="bg-[#161920] border border-[#1e222b] rounded-xl overflow-hidden">
+            {blockedRoles.length > 0 ? (
+              <div className="divide-y divide-[#1e222b]">
+                {blockedRoles.map(role => (
+                  <div key={role.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-[#1e222b]/30 transition-colors">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: role.color }}></div>
+                        <span className="font-bold text-white">{role.name}</span>
+                        <span className="text-xs text-[#9ca3af] bg-[#101216] px-1.5 py-0.5 rounded border border-[#2e3545]">{role.id}</span>
+                      </div>
+                      <div className="text-sm text-[#DA373C] mt-1 font-medium flex items-center gap-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                        {role.reason}
+                      </div>
+                      <div className="text-xs text-[#6b7280] mt-1">
+                        Zablokowano: {role.blockedAt} przez {role.blockedBy}
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => requestUnblock(role.id, 'role', role.name)}
+                      className="shrink-0 bg-[#1e222b] hover:bg-[#252a36] text-white font-medium py-1.5 px-3 rounded-lg text-xs transition border border-[#2e3545]"
+                    >
+                      Odblokuj
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="p-8 text-center text-[#9ca3af]">
+                Brak zablokowanych ról.
+              </div>
+            )}
+          </div>
+        </section>
+
+      </div>
+
+      {/* ========================================== */}
+      {/* OKNO MODALNE (Zabezpieczenie odblokowania) */}
+      {/* ========================================== */}
+      {isModalOpen && itemToUnblock && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-[#161920] border border-[#1e222b] rounded-2xl p-6 w-full max-w-md shadow-2xl shadow-black/50 transform transition-all scale-100">
+            
+            <div className="w-14 h-14 rounded-full bg-[#DA373C]/10 flex items-center justify-center mx-auto mb-4 border border-[#DA373C]/20">
+              <span className="text-2xl">🔓</span>
+            </div>
+            
+            <h3 className="text-xl font-bold text-white text-center mb-2">Potwierdź odblokowanie</h3>
+            <p className="text-center text-[#9ca3af] mb-6">
+              Czy na pewno chcesz zdjąć blokadę dla {itemToUnblock.type === 'user' ? 'użytkownika' : 'roli'} <strong className="text-white">{itemToUnblock.name}</strong>? 
+              <br/><br/>
+              Będą oni mogli ponownie tworzyć nowe tickety na serwerze.
+            </p>
+            
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="flex-1 bg-[#1e222b] hover:bg-[#252a36] text-white font-medium py-2.5 rounded-xl transition border border-[#2e3545]"
               >
                 Anuluj
               </button>
               <button 
-                onClick={modalConfig.onConfirm}
-                className="bg-[#DA373C] hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-colors shadow-lg shadow-red-600/20"
+                onClick={confirmUnblock}
+                className="flex-1 bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold py-2.5 rounded-xl transition shadow-lg shadow-[#5865f2]/20"
               >
-                Potwierdź Odblokowanie
+                Tak, odblokuj
               </button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }
