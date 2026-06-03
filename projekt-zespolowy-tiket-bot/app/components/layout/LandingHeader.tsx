@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useSettings } from '../../contexts/SettingsContext';
 import AccessibilityPanel from '../ui/AccessibilityPanel';
-import Image from 'next/image';
+import Image from '../ui/AppImage';
 
 export default function LandingHeader() {
   const { theme, setTheme, language, setLanguage } = useSettings();
