@@ -2,7 +2,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   output: 'export',
-  // Twoje dotychczasowe ustawienie ścieżki bazowej
+  // Twoje dotychczasowe ustawienie ścieżki bazowej.
   basePath: process.env.NODE_ENV === 'production' ? '/ProjektZespolowy' : '',
 
   // Naprawa ostrzeżenia podczas uruchamiania (npx next start)
