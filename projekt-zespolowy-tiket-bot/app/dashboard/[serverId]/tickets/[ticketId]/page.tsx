@@ -1,13 +1,3 @@
-// Dodajemy listę zmockowanych ID ticketów, żeby Next.js wiedział, co zbudować
-export function generateStaticParams() {
-  return [
-    { ticketId: '1' },
-    { ticketId: '2' },
-    { ticketId: '999' },
-    { ticketId: 'test' }
-  ];
-}
-
 'use client';
 
 import { useState, useEffect } from 'react';
